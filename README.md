@@ -1,4 +1,4 @@
-PhysXTutorial
+Phys-BAMT
 =============
 
-Tutorial for using PhysX SDK 3.x
+3D Version of BAMT with PhysX support!
