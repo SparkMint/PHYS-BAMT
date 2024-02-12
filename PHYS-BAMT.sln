@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Basic Program", "Basic Program\Basic Program.vcxproj", "{A3FA9D62-E074-4DDF-9D58-7F106E7F7008}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial 3", "Tutorial 3\Tutorial 3.vcxproj", "{EB5900CB-DC72-42B3-B1FD-445ECC8EFB93}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial 4", "Tutorial 4\Tutorial 4.vcxproj", "{60A30BB9-180C-4C50-AD2C-C519A11E1AFE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PHYS-BAMT", "PHYS-BAMT\PHYS-BAMT.vcxproj", "{C02BC78A-DF73-4CD3-8705-3B111AC98765}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,14 @@ Global
 		{60A30BB9-180C-4C50-AD2C-C519A11E1AFE}.Release|x64.Build.0 = Release|x64
 		{60A30BB9-180C-4C50-AD2C-C519A11E1AFE}.Release|x86.ActiveCfg = Release|Win32
 		{60A30BB9-180C-4C50-AD2C-C519A11E1AFE}.Release|x86.Build.0 = Release|Win32
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Debug|x64.ActiveCfg = Debug|x64
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Debug|x64.Build.0 = Debug|x64
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Debug|x86.ActiveCfg = Debug|Win32
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Debug|x86.Build.0 = Debug|Win32
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Release|x64.ActiveCfg = Release|x64
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Release|x64.Build.0 = Release|x64
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Release|x86.ActiveCfg = Release|Win32
+		{C02BC78A-DF73-4CD3-8705-3B111AC98765}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

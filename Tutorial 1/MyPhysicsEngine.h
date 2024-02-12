@@ -13,6 +13,7 @@ namespace PhysicsEngine
 	{
 		Plane* plane;
 		Box* box;
+		int steps;
 
 	public:
 		//Custom scene initialisation
@@ -45,6 +46,16 @@ namespace PhysicsEngine
 				", y=" << position.y << ", z=" << position.z << ",  ";
 			cout << setiosflags(ios::fixed) << setprecision(2) << "vx=" << velocity.x << 
 				", vy=" << velocity.y << ", vz=" << velocity.z << endl;
+
+			steps++;
+			if (steps == 10)
+			{
+				PxTransform trans = px_actor->getGlobalPose();
+				trans.p += PxVec3(10.f, 0, 0);
+				px_actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+				px_actor->setKinematicTarget(trans);
+				//px_actor->setGlobalPose(trans);
+			}
 		}
 	};
 }

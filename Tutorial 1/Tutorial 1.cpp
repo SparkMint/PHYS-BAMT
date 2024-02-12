@@ -29,7 +29,9 @@ int main()
 	while (!GetAsyncKeyState(VK_ESCAPE))
 	{
 		scene.Update(delta_time);
+
 		Sleep(100);
+
 	}
 
 	PxRelease();
