@@ -162,7 +162,4 @@ namespace PhysicsEngine
 
 		PxJoint* Get() { return joint; }
 	};
-
-
 }
-

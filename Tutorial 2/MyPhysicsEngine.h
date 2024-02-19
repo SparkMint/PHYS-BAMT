@@ -40,7 +40,12 @@ namespace PhysicsEngine
 	class MyScene : public Scene
 	{
 		Plane* plane;
-		Box* box;
+		Sphere* box;
+
+		PxVec3 brickSize = { 1.f, .5f, .5f };
+
+		int wallSize = 10;
+		float brickGap = .1f;
 
 	public:
 		///A custom scene class
@@ -53,6 +58,7 @@ namespace PhysicsEngine
 		//Custom scene initialisation
 		virtual void CustomInit() 
 		{
+			srand(time(NULL));
 			SetVisualisation();			
 
 			GetMaterial()->setDynamicFriction(.2f);
@@ -61,9 +67,42 @@ namespace PhysicsEngine
 			plane->Color(PxVec3(210.f/255.f,210.f/255.f,210.f/255.f));
 			Add(plane);
 
-			box = new Box(PxTransform(PxVec3(.0f,10.f,.0f)));
-			box->Color(color_palette[0]);
+			box = new Sphere(PxTransform(PxVec3(0.f, .5f, 10.f)));
 			Add(box);
+
+			CreateWall(PxVec3(0.f, 0.5f, 0.f), brickSize, wallSize, wallSize);
+			CreateWall(PxVec3(0.f, 0.5f, 5.f), brickSize, wallSize, wallSize);
+			CreateWall(PxVec3(0.f, 0.5f, 5.f), brickSize, wallSize, wallSize);
+
+		}
+
+		void CreateWall(const PxVec3& origin, const PxVec3& brickSize, int width, int height)
+		{
+			PxMaterial* brickMat = GetPhysics()->createMaterial(0.f, 1.f, 0.f);
+
+			for (size_t x = 0; x < width; x++)
+			{
+				for (size_t y = 0; y < height; y++)
+				{
+					//Create new brick at specified center.
+					PxVec3 brickPosition = origin; 
+
+					// Offset our brick by the current loop iterations.
+					brickPosition.x += brickSize.x * x * 2;
+					brickPosition.y += brickSize.y * y * 2;
+
+					if ((y & 1) == 0)
+					{
+						// Offset the bricks by its size to prevent it from sinking into the floor.
+						brickPosition.x += brickSize.x;
+					}
+
+					Box* box = new Box(PxTransform(brickPosition), brickSize);
+					box->Material(brickMat);
+					box->Color(PxVec3(rand() & 256, rand() & 256, rand() & 256));
+					Add(box);
+				}
+			}
 		}
 
 		//Custom udpate function
