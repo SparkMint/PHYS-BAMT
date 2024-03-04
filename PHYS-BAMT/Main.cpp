@@ -1,5 +1,6 @@
 #include <iostream>
-#include "VisualDebugger.h"
+#include "PBEngine.h"
+#include "Exception.h"
 
 using namespace std;
 
@@ -7,7 +8,7 @@ int main()
 {
 	try 
 	{ 
-		VisualDebugger::Init("Tutorial 3", 800, 800); 
+		PhysBamt::Engine::Init("Phys-Bamt", 800, 800); 
 	}
 	catch (Exception exc) 
 	{ 
@@ -15,7 +16,7 @@ int main()
 		return 0; 
 	}
 
-	VisualDebugger::Start();
+	PhysBamt::Engine::Start();
 
 	return 0;
 }

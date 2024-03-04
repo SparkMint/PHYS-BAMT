@@ -7,7 +7,7 @@ int main()
 {
 	try 
 	{ 
-		VisualDebugger::Init("Tutorial 4", 800, 800); 
+		PhysBamt::Init("Tutorial 4", 800, 800); 
 	}
 	catch (Exception exc) 
 	{ 
@@ -15,7 +15,7 @@ int main()
 		return 0; 
 	}
 
-	VisualDebugger::Start();
+	PhysBamt::Start();
 
 	return 0;
 }

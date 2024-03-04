@@ -1,6 +1,6 @@
 #include "PhysicsEngine.h"
 
-namespace PhysicsEngine
+namespace Physics
 {
 	using namespace physx;
 	using namespace std;

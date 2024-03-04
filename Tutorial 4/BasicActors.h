@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-namespace PhysicsEngine
+namespace Physics
 {
 	///Plane class
 	class Plane : public StaticActor

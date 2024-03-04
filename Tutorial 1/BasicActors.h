@@ -2,7 +2,7 @@
 
 #include "PhysicsEngine.h"
 
-namespace PhysicsEngine
+namespace Physics
 {
 	///Plane class
 	class Plane : public StaticActor

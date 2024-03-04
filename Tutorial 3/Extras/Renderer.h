@@ -5,7 +5,7 @@
 #include <GL/glut.h>
 #include <string>
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	namespace Renderer
 	{

@@ -4,7 +4,7 @@
 #include "Extras\Renderer.h"
 #include "Extras\HUD.h"
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	using namespace physx;
 
@@ -38,7 +38,7 @@ namespace VisualDebugger
 
 	///simulation objects
 	Camera* camera;
-	PhysicsEngine::MyScene* scene;
+	Physics::MyScene* scene;
 	PxReal delta_time = 1.f/60.f;
 	PxReal gForceStrength = 20;
 	RenderMode render_mode = NORMAL;
@@ -51,8 +51,8 @@ namespace VisualDebugger
 	void Init(const char *window_name, int width, int height)
 	{
 		///Init PhysX
-		PhysicsEngine::PxInit();
-		scene = new PhysicsEngine::MyScene();
+		Physics::PxInit();
+		scene = new Physics::MyScene();
 		scene->Init();
 
 		///Init renderer
@@ -372,7 +372,7 @@ namespace VisualDebugger
 	{
 		delete camera;
 		delete scene;
-		PhysicsEngine::PxRelease();
+		Physics::PxRelease();
 	}
 }
 

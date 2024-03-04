@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	namespace Renderer
 	{

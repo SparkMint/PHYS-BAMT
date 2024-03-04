@@ -7,7 +7,7 @@
 #include "Exception.h"
 #include <string>
 
-namespace PhysicsEngine
+namespace Physics
 {
 	using namespace physx;
 	using namespace std;

@@ -5,7 +5,7 @@
 #include "MyPhysicsEngine.h"
 
 using namespace std;
-using namespace PhysicsEngine;
+using namespace Physics;
 
 int main()
 {

@@ -1,11 +1,11 @@
-#include "Renderer.h"
+#include "PBRenderer.h"
 #include <iostream>
 #include <vector>
 #include "UserData.h"
 
 using namespace std;
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	namespace Renderer
 	{

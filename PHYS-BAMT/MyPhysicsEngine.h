@@ -1,11 +1,14 @@
 #pragma once
 
 #include "BasicActors.h"
+#include "Extras/Camera.h"
 #include <iostream>
 #include <iomanip>
 
-namespace PhysicsEngine
+namespace PhysBamt
 {
+	using namespace PhysBamt::Physics;
+	using namespace PhysBamt::Renderer;
 	using namespace std;
 
 	//a list of colours: Circus Palette
@@ -34,17 +37,6 @@ namespace PhysicsEngine
 			TriangleMesh(vector<PxVec3>(begin(pyramid_verts),end(pyramid_verts)), vector<PxU32>(begin(pyramid_trigs),end(pyramid_trigs)), pose)
 		{
 		}
-	};
-
-	struct FilterGroup
-	{
-		enum Enum
-		{
-			ACTOR0		= (1 << 0),
-			ACTOR1		= (1 << 1),
-			ACTOR2		= (1 << 2)
-			//add more if you need
-		};
 	};
 
 	///An example class showing the use of springs (distance joints).
@@ -177,78 +169,6 @@ namespace PhysicsEngine
 			pairFlags |= PxPairFlag::eNOTIFY_TOUCH_LOST;
 //			pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
 		}
-
 		return PxFilterFlags();
-	};
-
-	///Custom scene class
-	class MyScene : public Scene
-	{
-		Plane* plane;
-		Box* box, * box2;
-		MySimulationEventCallback* my_callback;
-		
-	public:
-		//specify your custom filter shader here
-		//PxDefaultSimulationFilterShader by default
-		MyScene() : Scene() {};
-
-		///A custom scene class
-		void SetVisualisation()
-		{
-			px_scene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0f);
-			px_scene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
-		}
-
-		//Custom scene initialisation
-		virtual void CustomInit() 
-		{
-			SetVisualisation();			
-
-			GetMaterial()->setDynamicFriction(.2f);
-
-			///Initialise and set the customised event callback
-			my_callback = new MySimulationEventCallback();
-			px_scene->setSimulationEventCallback(my_callback);
-
-			plane = new Plane();
-			plane->Color(PxVec3(210.f/255.f,210.f/255.f,210.f/255.f));
-			Add(plane);
-
-			box = new Box(PxTransform(PxVec3(.0f,.5f,.0f)));
-			box->Color(color_palette[0]);
-			//set collision filter flags
-			// box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
-			//use | operator to combine more actors e.g.
-			// box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
-			//don't forget to set your flags for the matching actor as well, e.g.:
-			// box2->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
-			box->Name("Box1");
-			Add(box);
-
-			/*
-			//joint two boxes together
-			//the joint is fixed to the centre of the first box, oriented by 90 degrees around the Y axis
-			//and has the second object attached 5 meters away along the Y axis from the first object.
-			RevoluteJoint joint(box, PxTransform(PxVec3(0.f,0.f,0.f),PxQuat(PxPi/2,PxVec3(0.f,1.f,0.f))), box2, PxTransform(PxVec3(0.f,5.f,0.f)));
-			*/
-		}
-
-		//Custom udpate function
-		virtual void CustomUpdate() 
-		{
-		}
-
-		/// An example use of key release handling
-		void ExampleKeyReleaseHandler()
-		{
-			cerr << "I am realeased!" << endl;
-		}
-
-		/// An example use of key presse handling
-		void ExampleKeyPressHandler()
-		{
-			cerr << "I am pressed!" << endl;
-		}
 	};
 }

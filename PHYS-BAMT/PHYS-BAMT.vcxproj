@@ -19,25 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BamtingScene.h" />
     <ClInclude Include="BasicActors.h" />
+    <ClInclude Include="ComplexActors.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="Extras\Camera.h" />
     <ClInclude Include="Extras\GLFontData.h" />
     <ClInclude Include="Extras\GLFontRenderer.h" />
     <ClInclude Include="Extras\HUD.h" />
-    <ClInclude Include="Extras\Renderer.h" />
+    <ClInclude Include="Extras\PBRenderer.h" />
     <ClInclude Include="Extras\UserData.h" />
     <ClInclude Include="MyPhysicsEngine.h" />
-    <ClInclude Include="PhysicsEngine.h" />
-    <ClInclude Include="VisualDebugger.h" />
+    <ClInclude Include="PBPhysics.h" />
+    <ClInclude Include="PBEngine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BamtingScene.cpp" />
     <ClCompile Include="Extras\Camera.cpp" />
     <ClCompile Include="Extras\GLFontRenderer.cpp" />
-    <ClCompile Include="Extras\Renderer.cpp" />
-    <ClCompile Include="PhysicsEngine.cpp" />
-    <ClCompile Include="VisualDebugger.cpp" />
-    <ClCompile Include="Tutorial 3.cpp" />
+    <ClCompile Include="Extras\PBRenderer.cpp" />
+    <ClCompile Include="PBPhysics.cpp" />
+    <ClCompile Include="PBEngine.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C02BC78A-DF73-4CD3-8705-3B111AC98765}</ProjectGuid>

@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	using namespace std;
 

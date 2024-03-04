@@ -3,56 +3,59 @@
 #include "foundation/PxTransform.h"
 #include "foundation/PxMat33.h"
 
-namespace VisualDebugger
+namespace PhysBamt
 {
-	using namespace physx;
-
-	///Camera class
-	class Camera
+	namespace Renderer
 	{
-	private:
-		PxVec3	eye, eye_init;
-		PxVec3	dir, dir_init;
-		PxReal speed, speed_init;
+		using namespace physx;
 
-	public:
-		///constructor
-		Camera(const PxVec3& _eye, const PxVec3& _dir, const PxReal _speed);
+		///Camera class
+		class Camera
+		{
+		private:
+			PxVec3	eye, eye_init;
+			PxVec3	dir, dir_init;
+			PxReal speed, speed_init;
 
-		///reset view
-		void Reset();
+		public:
+			///constructor
+			Camera(const PxVec3& _eye, const PxVec3& _dir, const PxReal _speed);
 
-		///handle camera motion
-		void Motion(int dx, int dy, PxReal delta_time);
+			///reset view
+			void Reset();
 
-		///handle analog move
-		void AnalogMove(float x, float y);
+			///handle camera motion
+			void Motion(int dx, int dy, PxReal delta_time);
 
-		///get camera position
-		PxVec3 getEye() const;
+			///handle analog move
+			void AnalogMove(float x, float y);
 
-		///get camera direction
-		PxVec3 getDir() const;
+			///get camera position
+			PxVec3 getEye() const;
 
-		///get camera transformation
-		PxTransform	getTransform() const;
+			///get camera direction
+			PxVec3 getDir() const;
 
-		///move camera forward
-		void MoveForward(PxReal delta_time);
+			///get camera transformation
+			PxTransform	getTransform() const;
 
-		///move camera backward
-		void MoveBackward(PxReal delta_time);
+			///move camera forward
+			void MoveForward(PxReal delta_time);
 
-		///move camera left
-		void MoveLeft(PxReal delta_time);
+			///move camera backward
+			void MoveBackward(PxReal delta_time);
 
-		///move camera right
-		void MoveRight(PxReal delta_time);
+			///move camera left
+			void MoveLeft(PxReal delta_time);
 
-		///move camera up
-		void MoveUp(PxReal delta_time);
+			///move camera right
+			void MoveRight(PxReal delta_time);
 
-		///move camera down
-		void MoveDown(PxReal delta_time);
-	};
+			///move camera up
+			void MoveUp(PxReal delta_time);
+
+			///move camera down
+			void MoveDown(PxReal delta_time);
+		};
+	}
 }

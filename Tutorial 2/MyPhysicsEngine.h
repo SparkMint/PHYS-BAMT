@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-namespace PhysicsEngine
+namespace Physics
 {
 	using namespace std;
 

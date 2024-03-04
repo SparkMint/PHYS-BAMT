@@ -3,7 +3,7 @@
 #include "foundation/PxTransform.h"
 #include "foundation/PxMat33.h"
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	using namespace physx;
 

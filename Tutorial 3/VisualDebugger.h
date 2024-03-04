@@ -2,7 +2,7 @@
 
 #include "MyPhysicsEngine.h"
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	using namespace physx;
 

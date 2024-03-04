@@ -1,7 +1,7 @@
 #include "PhysicsEngine.h"
 #include <iostream>
 
-namespace PhysicsEngine
+namespace Physics
 {
 	using namespace physx;
 	using namespace std;

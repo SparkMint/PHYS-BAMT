@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Renderer.h"
+#include "PBRenderer.h"
 #include <string>
 #include <list>
 
-namespace VisualDebugger
+namespace PhysBamt
 {
 	using namespace std;
 
