@@ -11,6 +11,8 @@ namespace PhysBamt
 	{
 		Plane* plane;
 		Box* box, * box2;
+		Box* test;
+		LinearJoint* joint;
 		Capsule* player;
 
 	public:

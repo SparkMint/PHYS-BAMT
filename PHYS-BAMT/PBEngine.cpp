@@ -45,7 +45,7 @@ namespace PhysBamt
 		///simulation objects
 		PhysBamt::BamtingScene* scene;
 		PxReal delta_time = 1.f / 60.f;
-		PxReal gForceStrength = 20;
+		PxReal gForceStrength = 100000;
 		RenderMode render_mode = NORMAL;
 		const int MAX_KEYS = 256;
 		bool key_state[MAX_KEYS];
