@@ -210,6 +210,13 @@ namespace PhysBamt
 			Name("");
 		}
 
+
+		DynamicActor::DynamicActor(const PxVec3& position, const PxQuat& rotation) : Actor()
+		{
+			actor = (PxActor*)GetPhysics()->createRigidDynamic(PxTransform(position, rotation));
+			Name("");
+		}
+
 		DynamicActor::~DynamicActor()
 		{
 			for (unsigned int i = 0; i < colors.size(); i++)

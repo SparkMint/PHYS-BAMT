@@ -1,24 +1,22 @@
 #pragma once
 
-#include "PBPhysics.h"
+#include "PBPhysics.h" 
 #include "BasicActors.h"
+#include "ComplexActors.h"
 
 namespace PhysBamt
 {
 	using namespace PhysBamt::Physics;
 
-	class BamtingScene : public Scene
+	class PoolScene : public Scene
 	{
 		Plane* plane;
-		Box* box, * box2;
-		Box* test;
-		LinearJoint* joint;
-		Capsule* player;
+		PoolTable* table;
 
 	public:
 		//specify your custom filter shader here
 		//PxDefaultSimulationFilterShader by default
-		BamtingScene() : Scene() {};
+		PoolScene() : Scene() {};
 
 		///A custom scene class
 		void SetVisualisation();

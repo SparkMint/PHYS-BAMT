@@ -33,6 +33,11 @@ namespace PhysBamt
 			{
 				CreateShape(PxSphereGeometry(radius), density);
 			}
+
+			Sphere(const PxVec3& position, const PxQuat& rotation, PxReal radius = 1.f, PxReal density = 1.f) : DynamicActor(position, rotation)
+			{
+				CreateShape(PxSphereGeometry(radius), density);
+			}
 		};
 
 		///Box class
@@ -48,6 +53,11 @@ namespace PhysBamt
 			{
 				CreateShape(PxBoxGeometry(dimensions), density);
 			}
+
+			Box(const PxVec3& position, const PxQuat& rotation, PxVec3 dimensions = PxVec3(.5f, .5f, .5f), PxReal density = 1.f) : DynamicActor(position, rotation)
+			{
+				CreateShape(PxBoxGeometry(dimensions), density);
+			}
 		};
 
 		class Capsule : public DynamicActor
@@ -55,6 +65,11 @@ namespace PhysBamt
 		public:
 			Capsule(const PxTransform& pose = PxTransform(PxIdentity), PxVec2 dimensions = PxVec2(1.f, 1.f), PxReal density = 1.f)
 				: DynamicActor(pose)
+			{
+				CreateShape(PxCapsuleGeometry(dimensions.x, dimensions.y), density);
+			}
+
+			Capsule(const PxVec3& position, const PxQuat& rotation, PxVec2 dimensions = PxVec2(1.f, 1.f), PxReal density = 1.f) : DynamicActor(position, rotation)
 			{
 				CreateShape(PxCapsuleGeometry(dimensions.x, dimensions.y), density);
 			}
@@ -122,6 +137,30 @@ namespace PhysBamt
 				PxDefaultMemoryInputData input(stream.getData(), stream.getSize());
 
 				return GetPhysics()->createTriangleMesh(input);
+			}
+		};
+
+		//pyramid vertices
+		static PxVec3 pyramid_verts[] = { PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1) };
+		//pyramid triangles: a list of three vertices for each triangle e.g. the first triangle consists of vertices 1, 4 and 0
+		//vertices have to be specified in a counter-clockwise order to assure the correct shading in rendering
+		static PxU32 pyramid_trigs[] = { 1, 4, 0, 3, 1, 0, 2, 3, 0, 4, 2, 0, 3, 2, 1, 2, 4, 1 };
+
+		class Pyramid : public ConvexMesh
+		{
+		public:
+			Pyramid(PxTransform pose = PxTransform(PxIdentity), PxReal density = 1.f) :
+				ConvexMesh(vector<PxVec3>(begin(pyramid_verts), end(pyramid_verts)), pose, density)
+			{
+			}
+		};
+
+		class PyramidStatic : public TriangleMesh
+		{
+		public:
+			PyramidStatic(PxTransform pose = PxTransform(PxIdentity)) :
+				TriangleMesh(vector<PxVec3>(begin(pyramid_verts), end(pyramid_verts)), vector<PxU32>(begin(pyramid_trigs), end(pyramid_trigs)), pose)
+			{
 			}
 		};
 

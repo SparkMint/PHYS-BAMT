@@ -77,6 +77,8 @@ namespace PhysBamt
 		public:
 			DynamicActor(const PxTransform& pose);
 
+			DynamicActor(const PxVec3& position, const PxQuat& rotation);
+
 			~DynamicActor();
 
 			void CreateShape(const PxGeometry& geometry, PxReal density);

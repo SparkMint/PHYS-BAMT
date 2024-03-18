@@ -43,7 +43,7 @@ namespace PhysBamt
 		void HUDInit();
 
 		///simulation objects
-		PhysBamt::BamtingScene* scene;
+		PhysBamt::PoolScene* scene;
 		PxReal delta_time = 1.f / 60.f;
 		PxReal gForceStrength = 100000;
 		RenderMode render_mode = NORMAL;
@@ -57,7 +57,7 @@ namespace PhysBamt
 		{
 			///Init PhysX
 			Physics::PxInit();
-			scene = new BamtingScene();
+			scene = new PoolScene();
 			scene->Init();
 
 			///Init renderer
