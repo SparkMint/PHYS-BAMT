@@ -246,7 +246,7 @@ namespace PhysBamt
 			delete[] namestr;
 		}
 
-		void Init()
+		void InitializeRenderer()
 		{
 			// Setup default render states
 			PxReal specular_material[] = { .1f, .1f, .1f, 1.f };
@@ -267,7 +267,7 @@ namespace PhysBamt
 			glEnable(GL_LIGHT0);
 		}
 
-		void Start(const PxVec3& cameraEye, const PxVec3& cameraDir)
+		void StartRenderer(const PxVec3& cameraEye, const PxVec3& cameraDir)
 		{
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -286,7 +286,7 @@ namespace PhysBamt
 			background_color = color;
 		}
 
-		void Render(PxActor** actors, const PxU32 numActors)
+		void RenderScene(PxActor** actors, const PxU32 numActors)
 		{
 			PxVec3 shadow_color = default_color * 0.9;
 			for (PxU32 i = 0; i < numActors; i++) {
@@ -365,7 +365,7 @@ namespace PhysBamt
 				}
 				}
 
-		void Finish()
+		void FinishRendering()
 		{
 			glutSwapBuffers();
 		}
@@ -395,7 +395,7 @@ namespace PhysBamt
 
 		///Render PxRenderBuffer
 		///TODO: support text data
-		void Render(const PxRenderBuffer& data, PxReal line_width)
+		void RenderScene(const PxRenderBuffer& data, PxReal line_width)
 		{
 			glLineWidth(line_width);
 

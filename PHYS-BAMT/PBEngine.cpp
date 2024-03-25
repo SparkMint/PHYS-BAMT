@@ -1,176 +1,117 @@
 #include "PBEngine.h"
-#include "PBPhysics.h"
-#include <vector>
-#include "Extras\Camera.h"
-#include "Extras\PBRenderer.h"
-#include "Extras\HUD.h"
 
 namespace PhysBamt
 {
 	namespace Engine
 	{
-		using namespace physx;
+		// Time points which are used to calculate deltaTime
+		chrono::steady_clock::time_point currentTimePoint;
+		chrono::steady_clock::time_point lastTimePoint;
 
-		using namespace PhysBamt::Physics;
-		using namespace PhysBamt::Renderer;
-
-		enum RenderMode
-		{
-			DEBUG,
-			NORMAL,
-			BOTH
-		};
-
-		enum HUDState
-		{
-			EMPTY = 0,
-			HELP = 1,
-			PAUSE = 2
-		};
-
-		//function declarations
-		void KeyHold();
-		void KeySpecial(int key, int x, int y);
-		void KeyRelease(unsigned char key, int x, int y);
-		void KeyPress(unsigned char key, int x, int y);
-
-		void motionCallback(int x, int y);
-		void mouseCallback(int button, int state, int x, int y);
-		void exitCallback(void);
-
-		void RenderScene();
-		void ToggleRenderMode();
-		void HUDInit();
-
-		///simulation objects
-		PhysBamt::PoolScene* scene;
-		PxReal delta_time = 1.f / 60.f;
-		PxReal gForceStrength = 100000;
-		RenderMode render_mode = NORMAL;
+		// Key Handling
 		const int MAX_KEYS = 256;
 		bool key_state[MAX_KEYS];
-		bool hud_show = true;
-		HUD hud;
 
-		//Init the debugger
-		void Init(const char* window_name, int width, int height)
+		/// Mouse Position
+		int mMouseX = 0;
+		int mMouseY = 0;
+		
+		PxReal gForceStrength = 1;
+		
+		void InitializeEngine(const char* window_name, int width, int height)
 		{
-			///Init PhysX
-			Physics::PxInit();
+			// Initialize the physics engine
+			InitPhysX();
+
+			// Initialise our scene
 			scene = new PoolScene();
 			scene->Init();
 
 			///Init renderer
-			Renderer::BackgroundColor(PxVec3(150.f / 255.f, 150.f / 255.f, 150.f / 255.f));
-			Renderer::SetRenderDetail(40);
-			Renderer::InitWindow(window_name, width, height);
-			Renderer::Init();
-
+			BackgroundColor(PxVec3(150.f / 255.f, 150.f / 255.f, 150.f / 255.f));
+			SetRenderDetail(40);
+			InitWindow(window_name, width, height);
+			InitializeRenderer();
 			camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f, -.1f, -1.f), 5.f);
 
 			//initialise HUD
-			HUDInit();
+			InitDebugHUD();
 
 			///Assign callbacks
-			//render
-			glutDisplayFunc(RenderScene);
+			// Engine Loop
+			glutDisplayFunc(EngineLoop);
 
-			//keyboard
-			glutKeyboardFunc(KeyPress);
-			glutSpecialFunc(KeySpecial);
-			glutKeyboardUpFunc(KeyRelease);
+			// Keyboard
+			glutKeyboardFunc(OnKeyPressed);
+			glutSpecialFunc(HandleDebugInputs);
+			glutKeyboardUpFunc(OnKeyReleased);
 
-			//mouse
+			// Mouse
 			glutMouseFunc(mouseCallback);
 			glutMotionFunc(motionCallback);
 
-			//exit
-			atexit(exitCallback);
+			// Exit
+			atexit(ExitCallback);
 
 			//init motion callback
 			motionCallback(0, 0);
 		}
 
-		void HUDInit()
+		void InitDebugHUD()
 		{
-			//initialise HUD
-			//add an empty screen
+			// EMPTY SCREEN
 			hud.AddLine(EMPTY, "");
-			//add a help screen
-			hud.AddLine(HELP, " Simulation");
-			hud.AddLine(HELP, "    F9 - select next actor");
-			hud.AddLine(HELP, "    F10 - pause");
-			hud.AddLine(HELP, "    F12 - reset");
-			hud.AddLine(HELP, "");
-			hud.AddLine(HELP, " Display");
-			hud.AddLine(HELP, "    F5 - help on/off");
-			hud.AddLine(HELP, "    F6 - shadows on/off");
-			hud.AddLine(HELP, "    F7 - render mode");
-			hud.AddLine(HELP, "");
-			hud.AddLine(HELP, " Camera");
-			hud.AddLine(HELP, "    W,S,A,D,Q,Z - forward,backward,left,right,up,down");
-			hud.AddLine(HELP, "    mouse + click - change orientation");
-			hud.AddLine(HELP, "    F8 - reset view");
-			hud.AddLine(HELP, "");
-			hud.AddLine(HELP, " Force (applied to the selected actor)");
-			hud.AddLine(HELP, "    I,K,J,L,U,M - forward,backward,left,right,up,down");
-			//add a pause screen
-			hud.AddLine(PAUSE, "");
-			hud.AddLine(PAUSE, "");
-			hud.AddLine(PAUSE, "");
-			hud.AddLine(PAUSE, "   Simulation paused. Press F10 to continue.");
-			//set font size for all screens
+
+			// HELP SCREEN
+			hud.AddLine(HELP, "\n"
+					 "SIMULATION \n"
+					 "F9 - Select next actor \n"
+					 "F10 - Pause \n"
+					 "F12 - Reset \n"
+					 "\n"
+					 "DISPLAY \n"
+					 "F5 - Toggle Debug HUD \n"
+					 "F6 - Render Shadows \n"
+					 "F7 - Debug/Normal/Both Render Modes \n"
+					 "\n"
+					 "CAMERA \n"
+					 "W,S,A,D,E,Q - Forward, Backward, Left, Right, Up, Down \n"
+					 "RMB + Mouse - Look Around \n"
+					 "F8 - Reset View \n");
+			
+			// PAUSE SCREEN
+			hud.AddLine(PAUSE, "\n"
+					  "SIMULATION PAUSED. Press F10 to continue.");
+
+			// FONT SETTINGS
 			hud.FontSize(0.018f);
-			//set font color for all screens
 			hud.Color(PxVec3(0.f, 0.f, 0.f));
 		}
-
-		//Start the main loop
-		void Start()
+		
+		void StartEngine()
 		{
 			glutMainLoop();
 		}
-
-		//Render the scene and perform a single simulation step
-		void RenderScene()
+		
+		void EngineLoop()
 		{
-			//handle pressed keys
-			KeyHold();
+			HandleKeyboardInputs();
 
-			//start rendering
-			Renderer::Start(camera->getEye(), camera->getDir());
+			// Calculate DeltaTime using chrono.
+			currentTimePoint = std::chrono::steady_clock::now();
+			deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTimePoint - lastTimePoint).count() / 1000000.0f;
+			lastTimePoint = currentTimePoint;
 
-			if ((render_mode == DEBUG) || (render_mode == BOTH))
-			{
-				Renderer::Render(scene->Get()->getRenderBuffer());
-			}
+			StartRenderer(camera->getEye(), camera->getDir());
+			
+			scene->SceneLoop(deltaTime);
+			
+			// Scene handles rendering
 
-			if ((render_mode == NORMAL) || (render_mode == BOTH))
-			{
-				std::vector<PxActor*> actors = scene->GetAllActors();
-				if (actors.size())
-					Renderer::Render(&actors[0], (PxU32)actors.size());
-			}
-
-			//adjust the HUD state
-			if (hud_show)
-			{
-				if (scene->Pause())
-					hud.ActiveScreen(PAUSE);
-				else
-					hud.ActiveScreen(HELP);
-			}
-			else
-				hud.ActiveScreen(EMPTY);
-
-			//render HUD
+			hud.ActiveScreen(hudState);
+			
 			hud.Render();
-
-			//finish rendering
-			Renderer::Finish();
-
-			//perform a single simulation step
-			scene->Update(delta_time);
+			FinishRendering();
 		}
 
 		//user defined keyboard handlers
@@ -207,22 +148,22 @@ namespace PhysBamt
 			switch (toupper(key))
 			{
 			case 'W':
-				camera->MoveForward(delta_time);
+				camera->MoveForward(deltaTime);
 				break;
 			case 'S':
-				camera->MoveBackward(delta_time);
+				camera->MoveBackward(deltaTime);
 				break;
 			case 'A':
-				camera->MoveLeft(delta_time);
+				camera->MoveLeft(deltaTime);
 				break;
 			case 'D':
-				camera->MoveRight(delta_time);
+				camera->MoveRight(deltaTime);
+				break;
+			case 'E':
+				camera->MoveUp(deltaTime);
 				break;
 			case 'Q':
-				camera->MoveUp(delta_time);
-				break;
-			case 'Z':
-				camera->MoveDown(delta_time);
+				camera->MoveDown(deltaTime);
 				break;
 			default:
 				break;
@@ -262,7 +203,7 @@ namespace PhysBamt
 		}
 
 		///handle special keys
-		void KeySpecial(int key, int x, int y)
+		void HandleDebugInputs(int key, int x, int y)
 		{
 			//simulation control
 			switch (key)
@@ -270,7 +211,7 @@ namespace PhysBamt
 				//display control
 			case GLUT_KEY_F5:
 				//hud on/off
-				hud_show = !hud_show;
+				ToggleHUDMode();
 				break;
 			case GLUT_KEY_F6:
 				//shadows on/off
@@ -293,6 +234,7 @@ namespace PhysBamt
 			case GLUT_KEY_F10:
 				//toggle scene pause
 				scene->Pause(!scene->Pause());
+				ToggleHUDMode();
 				break;
 			case GLUT_KEY_F12:
 				//resect scene
@@ -303,31 +245,29 @@ namespace PhysBamt
 			}
 		}
 
-		//handle single key presses
-		void KeyPress(unsigned char key, int x, int y)
+
+		void OnKeyPressed(unsigned char key, int x, int y)
 		{
-			//do it only once
 			if (key_state[key] == true)
 				return;
 
 			key_state[key] = true;
 
-			//exit
+			// I think this is meant to be the escape key?
 			if (key == 27)
 				exit(0);
 
 			UserKeyPress(key);
 		}
 
-		//handle key release
-		void KeyRelease(unsigned char key, int x, int y)
+
+		void OnKeyReleased(unsigned char key, int x, int y)
 		{
 			key_state[key] = false;
 			UserKeyRelease(key);
 		}
-
-		//handle holded keys
-		void KeyHold()
+		
+		void HandleKeyboardInputs()
 		{
 			for (int i = 0; i < MAX_KEYS; i++)
 			{
@@ -340,16 +280,12 @@ namespace PhysBamt
 			}
 		}
 
-		///mouse handling
-		int mMouseX = 0;
-		int mMouseY = 0;
-
 		void motionCallback(int x, int y)
 		{
-			int dx = mMouseX - x;
-			int dy = mMouseY - y;
+			int deltaX = mMouseX - x;
+			int deltaY = mMouseY - y;
 
-			camera->Motion(dx, dy, delta_time);
+			camera->Motion(deltaX, deltaY, deltaTime);
 
 			mMouseX = x;
 			mMouseY = y;
@@ -361,22 +297,34 @@ namespace PhysBamt
 			mMouseY = y;
 		}
 
-		void ToggleRenderMode()
+		void ToggleHUDMode()
 		{
-			if (render_mode == NORMAL)
-				render_mode = DEBUG;
-			else if (render_mode == DEBUG)
-				render_mode = BOTH;
-			else if (render_mode == BOTH)
-				render_mode = NORMAL;
+			if(scene->Pause())
+			{
+				hudState = PAUSE;
+			}
+			else
+			{
+				hudState = hudState == HELP ? EMPTY : HELP;
+			}
 		}
 
-		///exit callback
-		void exitCallback(void)
+
+		void ToggleRenderMode()
+		{
+			if (renderMode == NORMAL)
+				renderMode = DEBUG;
+			else if (renderMode == DEBUG)
+				renderMode = BOTH;
+			else if (renderMode == BOTH)
+				renderMode = NORMAL;
+		}
+		
+		void ExitCallback(void)
 		{
 			delete camera;
 			delete scene;
-			Physics::PxRelease();
+			PxRelease();
 		}
 	}
 }

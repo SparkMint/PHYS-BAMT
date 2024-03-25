@@ -8,7 +8,7 @@ int main()
 {
 	try 
 	{ 
-		PhysBamt::Engine::Init("Phys-Bamt", 800, 800); 
+		PhysBamt::Engine::InitializeEngine("Phys-Bamt", 800, 800); 
 	}
 	catch (Exception exc) 
 	{ 
@@ -16,7 +16,7 @@ int main()
 		return 0; 
 	}
 
-	PhysBamt::Engine::Start();
+	PhysBamt::Engine::StartEngine();
 
 	return 0;
 }

@@ -59,7 +59,7 @@ namespace PhysBamt
 		Renderer::BackgroundColor(PxVec3(150.f/255.f,150.f/255.f,150.f/255.f));
 		Renderer::SetRenderDetail(40);
 		Renderer::InitWindow(window_name, width, height);
-		Renderer::Init();
+		Renderer::InitializeRenderer();
 
 		camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f,-.1f,-1.f), 5.f);
 
@@ -133,18 +133,18 @@ namespace PhysBamt
 		KeyHold();
 
 		//start rendering
-		Renderer::Start(camera->getEye(), camera->getDir());
+		Renderer::StartRenderer(camera->getEye(), camera->getDir());
 
 		if ((render_mode == DEBUG) || (render_mode == BOTH))
 		{
-			Renderer::Render(scene->Get()->getRenderBuffer());
+			Renderer::RenderScene(scene->Get()->getRenderBuffer());
 		}
 
 		if ((render_mode == NORMAL) || (render_mode == BOTH))
 		{
 			std::vector<PxActor*> actors = scene->GetAllActors();
 			if (actors.size())
-				Renderer::Render(&actors[0], (PxU32)actors.size());
+				Renderer::RenderScene(&actors[0], (PxU32)actors.size());
 		}
 
 		//adjust the HUD state
@@ -162,7 +162,7 @@ namespace PhysBamt
 		hud.Render();
 
 		//finish rendering
-		Renderer::Finish();
+		Renderer::FinishRendering();
 
 		//perform a single simulation step
 		scene->Update(delta_time);

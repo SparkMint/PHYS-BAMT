@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "UserData.h"
+#include "../PBPhysics.h"
 
 using namespace std;
 
@@ -246,7 +247,7 @@ namespace PhysBamt
 			delete[] namestr;
 		}
 
-		void Init()
+		void InitializeRenderer()
 		{
 			// Setup default render states
 			PxReal specular_material[] = { .1f, .1f, .1f, 1.f };
@@ -267,7 +268,7 @@ namespace PhysBamt
 			glEnable(GL_LIGHT0);
 		}
 
-		void Start(const PxVec3& cameraEye, const PxVec3& cameraDir)
+		void StartRenderer(const PxVec3& cameraEye, const PxVec3& cameraDir)
 		{
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -285,26 +286,21 @@ namespace PhysBamt
 		{
 			background_color = color;
 		}
-
-		void Render(PxActor** actors, const PxU32 numActors)
+		
+		void RenderScene(Physics::Scene* scene, PxActor** actors, const PxU32 numActors)
 		{
 			PxVec3 shadow_color = default_color * 0.9;
-			for (PxU32 i = 0; i < numActors; i++) {
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
-				if (actors[i]->isCloth()) {
-#else
-				if (actors[i]->is<PxCloth>()) {
-#endif
+			for (PxU32 i = 0; i < numActors; i++)
+			{
+				if (actors[i]->is<PxCloth>())
+				{
 					RenderCloth((PxCloth*)actors[i]);
 				}
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
-				else if (actors[i]->isRigidActor()) {
-#else
-				else if (actors[i]->is<PxRigidActor>()) {
-#endif
+				else if (actors[i]->is<PxRigidActor>())
+				{
 					PxRigidActor* rigid_actor = (PxRigidActor*)actors[i];
 					std::vector<PxShape*> shapes(rigid_actor->getNbShapes());
-					rigid_actor->getShapes((PxShape**)&shapes.front(), (PxU32)shapes.size());
+					rigid_actor->getShapes(&shapes.front(), (PxU32)shapes.size());
 
 					for (PxU32 j = 0; j < shapes.size(); j++)
 					{
@@ -361,11 +357,10 @@ namespace PhysBamt
 						}
 					}
 				}
+			}
+		}
 
-				}
-				}
-
-		void Finish()
+		void FinishRendering()
 		{
 			glutSwapBuffers();
 		}
@@ -392,15 +387,12 @@ namespace PhysBamt
 			glDisableClientState(GL_COLOR_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
-
-		///Render PxRenderBuffer
-		///TODO: support text data
-		void Render(const PxRenderBuffer& data, PxReal line_width)
+		
+		void RenderSceneDebug(Physics::Scene* scene, PxReal line_width)
 		{
 			glLineWidth(line_width);
 
-			//render points
-
+			const PxRenderBuffer& data = scene->Get()->getRenderBuffer();
 			unsigned int NbPoints = data.getNbPoints();
 			if (NbPoints)
 			{

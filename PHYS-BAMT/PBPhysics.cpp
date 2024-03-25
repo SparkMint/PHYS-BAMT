@@ -1,5 +1,8 @@
 #include "PBPhysics.h"
 #include <iostream>
+
+#include "PBEngine.h"
+#include "Extras/PBRenderer.h"
 #
 namespace PhysBamt
 {
@@ -23,7 +26,7 @@ namespace PhysBamt
 		PxCooking* cooking = 0;
 
 		///PhysX functions
-		void PxInit()
+		void InitPhysX()
 		{
 			//foundation
 			if (!foundation) {
@@ -287,7 +290,7 @@ namespace PhysBamt
 			//default gravity
 			px_scene->setGravity(PxVec3(0.0f, -9.81f, 0.0f));
 
-			CustomInit();
+			Start();
 
 			pause = false;
 
@@ -295,16 +298,41 @@ namespace PhysBamt
 
 			SelectNextActor();
 		}
-
-		void Scene::Update(PxReal dt)
+		
+		void Scene::SceneLoop(PxReal dt)
 		{
 			if (pause)
 				return;
 
-			CustomUpdate();
+			if(dt > 0.25f)
+				dt = 0.25f;
 
-			px_scene->simulate(dt);
-			px_scene->fetchResults(true);
+			accumulator += dt;
+
+			Update(dt);
+			
+			while (accumulator >= fixedDeltaTime)
+			{
+				FixedUpdate(fixedDeltaTime);
+				px_scene->simulate(fixedDeltaTime);
+				px_scene->fetchResults(true);
+				accumulator -= fixedDeltaTime;
+			}
+
+			if (Engine::renderMode == Engine::DEBUG || Engine::renderMode == Engine::BOTH)
+				Renderer::RenderSceneDebug(this, 1.f);
+
+			if (Engine::renderMode == Engine::NORMAL || Engine::renderMode == Engine::BOTH)
+			{
+				std::vector<PxActor*> actors = this->GetAllActors(); 
+				if (!actors.empty())
+					Renderer::RenderScene(this, actors.data(), static_cast<PxU32>(actors.size()));
+			}
+		}
+
+		void Scene::SetFixedDeltaTime(PxReal newFixedDeltaTime)
+		{
+			fixedDeltaTime = newFixedDeltaTime;
 		}
 
 		void Scene::Add(Actor* actor)
@@ -340,13 +368,8 @@ namespace PhysBamt
 
 		void Scene::SelectNextActor()
 		{
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
-			std::vector<PxRigidDynamic*> actors(px_scene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC));
-			if (actors.size() && (px_scene->getActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC, (PxActor**)&actors.front(), (PxU32)actors.size())))
-#else
 			std::vector<PxRigidDynamic*> actors(px_scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC));
 			if (actors.size() && (px_scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC, (PxActor**)&actors.front(), (PxU32)actors.size())))
-#endif
 			{
 				if (selected_actor)
 				{
@@ -371,15 +394,10 @@ namespace PhysBamt
 
 		std::vector<PxActor*> Scene::GetAllActors()
 		{
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
-			physx::PxActorTypeSelectionFlags selection_flag = PxActorTypeSelectionFlag::eRIGID_DYNAMIC | PxActorTypeSelectionFlag::eRIGID_STATIC |
-				PxActorTypeSelectionFlag::eCLOTH;
-#else
 			physx::PxActorTypeFlags selection_flag = PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC |
 				PxActorTypeFlag::eCLOTH;
-#endif
 			std::vector<PxActor*> actors(px_scene->getNbActors(selection_flag));
-			px_scene->getActors(selection_flag, (PxActor**)&actors.front(), (PxU32)actors.size());
+			px_scene->getActors(selection_flag, &actors.front(), (PxU32)actors.size());
 			return actors;
 		}
 

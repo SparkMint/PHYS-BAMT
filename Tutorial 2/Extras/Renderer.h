@@ -15,16 +15,16 @@ namespace PhysBamt
 		void InitWindow(const char *name, int width, int height);
 
 		///Init renderer
-		void Init();
+		void InitializeRenderer();
 
 		///Start rendering a single frame
-		void Start(const PxVec3& cameraEye, const PxVec3& cameraDir);
+		void StartRenderer(const PxVec3& cameraEye, const PxVec3& cameraDir);
 
 		///Render actors
-		void Render(PxActor** actors, const PxU32 numActors);
+		void RenderScene(PxActor** actors, const PxU32 numActors);
 
 		///Render debug information
-		void Render(const PxRenderBuffer& data, PxReal line_width=1.f);
+		void RenderScene(const PxRenderBuffer& data, PxReal line_width=1.f);
 
 		///Render text
 		void RenderText(const std::string& text, const physx::PxVec2& location, 
@@ -34,7 +34,7 @@ namespace PhysBamt
 		void BackgroundColor(const PxVec3& background_color);
 
 		///Finish rendering a single frame
-		void Finish();
+		void FinishRendering();
 
 		///Set rendering detail for spheres and capsules.
 		void SetRenderDetail(int value);

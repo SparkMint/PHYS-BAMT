@@ -14,7 +14,7 @@ namespace PhysBamt
 		using namespace std;
 
 		///Initialise PhysX framework
-		void PxInit();
+		void InitPhysX();
 
 		///Release PhysX resources
 		void PxRelease();
@@ -43,6 +43,7 @@ namespace PhysBamt
 			std::string name;
 
 		public:
+			virtual ~Actor() = default;
 			///Constructor
 			Actor()
 				: actor(0)
@@ -111,24 +112,35 @@ namespace PhysBamt
 			//custom filter shader
 			PxSimulationFilterShader filter_shader;
 
+			// Fixed Simulation Timestep.
+			PxReal fixedDeltaTime = .02f;
+
+			// Accumulator responsible for determining when to run simulation updates.
+			PxReal accumulator = 0.0f;
+
 			void HighlightOn(PxRigidDynamic* actor);
 
 			void HighlightOff(PxRigidDynamic* actor);
 
 		public:
+			virtual ~Scene() = default;
 			Scene(PxSimulationFilterShader custom_filter_shader = PxDefaultSimulationFilterShader) : filter_shader(custom_filter_shader) {}
 
 			///Init the scene
 			void Init();
 
 			///User defined initialisation
-			virtual void CustomInit() {}
+			virtual void Start() {}
 
 			///Perform a single simulation step
-			void Update(PxReal dt);
+			void SceneLoop(PxReal dt);
 
 			///User defined update step
-			virtual void CustomUpdate() {}
+			virtual void Update(PxReal dt) {}
+
+			virtual void FixedUpdate(PxReal fdt) {}
+
+			void SetFixedDeltaTime(PxReal newFixedDeltaTime);
 
 			///Add actors
 			void Add(Actor* actor);

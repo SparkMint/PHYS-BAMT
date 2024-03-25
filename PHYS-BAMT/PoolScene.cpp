@@ -1,4 +1,4 @@
-#include "BamtingScene.h"
+#include "PoolScene.h"
 
 using namespace PhysBamt::Physics;
 
@@ -15,7 +15,6 @@ namespace PhysBamt
 			ACTOR0 = (1 << 0),
 			ACTOR1 = (1 << 1),
 			ACTOR2 = (1 << 2)
-			//add more if you need
 		};
 	};
 
@@ -25,9 +24,12 @@ namespace PhysBamt
 		px_scene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
 	}
 
-	void PoolScene::CustomInit()
+	void PoolScene::Start()
 	{
 		SetVisualisation();
+
+		// 10 Hz Stress Test
+		SetFixedDeltaTime(.1f);
 
 		GetMaterial()->setDynamicFriction(.2f);
 
@@ -37,10 +39,30 @@ namespace PhysBamt
 
 		table = new PoolTable(PxVec3(0.f, 0.f, 0.f));
 		table->AddToScene(this);
+		
+		for (int i = 0; i < 100; ++i)
+		{
+			PxVec3 ballPos = PxVec3(-1.f + i * .01f, 2.f + i * .068f, 0.f);
+			
+			if ((i & 1) == 0)
+			{
+				// Offset the bricks by its size to prevent it from sinking into the floor.
+				ballPos.z += .025f;
+			}
+
+			Sphere* sphere = new Sphere(ballPos, PxIdentity, .068f, 1.f);
+			Add(sphere);
+		}
 	}
 
-	void PoolScene::CustomUpdate()
+	void PoolScene::Update(PxReal dt)
 	{
+		
+	}
+
+	void PoolScene::FixedUpdate(PxReal fdt)
+	{
+		
 	}
 }
 

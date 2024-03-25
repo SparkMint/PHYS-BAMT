@@ -1,14 +1,13 @@
 #pragma once
 
 #include "BasicActors.h"
-#include "Extras/Camera.h"
+
 #include <iostream>
 #include <iomanip>
 
 namespace PhysBamt
 {
 	using namespace PhysBamt::Physics;
-	using namespace PhysBamt::Renderer;
 	using namespace std;
 
 	//a list of colours: Circus Palette

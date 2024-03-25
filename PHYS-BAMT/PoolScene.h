@@ -12,19 +12,23 @@ namespace PhysBamt
 	{
 		Plane* plane;
 		PoolTable* table;
+		vector<Sphere*> balls;
 
 	public:
 		//specify your custom filter shader here
 		//PxDefaultSimulationFilterShader by default
-		PoolScene() : Scene() {};
+		PoolScene() = default;
 
 		///A custom scene class
 		void SetVisualisation();
 
 		//Custom scene initialisation
-		virtual void CustomInit();
+		void Start() override;
 
 		//Custom udpate function
-		virtual void CustomUpdate();
+		void Update(PxReal dt) override;
+
+		void FixedUpdate(PxReal fdt) override;
+
 	};
 }

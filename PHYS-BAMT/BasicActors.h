@@ -34,7 +34,7 @@ namespace PhysBamt
 				CreateShape(PxSphereGeometry(radius), density);
 			}
 
-			Sphere(const PxVec3& position, const PxQuat& rotation, PxReal radius = 1.f, PxReal density = 1.f) : DynamicActor(position, rotation)
+			Sphere(const PxVec3& position, const PxQuat& rotation = PxIdentity, PxReal radius = 1.f, PxReal density = 1.f) : DynamicActor(position, rotation)
 			{
 				CreateShape(PxSphereGeometry(radius), density);
 			}

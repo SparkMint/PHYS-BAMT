@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BamtingScene.h" />
+    <ClInclude Include="PoolScene.h" />
     <ClInclude Include="BasicActors.h" />
     <ClInclude Include="ComplexActors.h" />
     <ClInclude Include="Exception.h" />
@@ -34,7 +34,7 @@
     <ClInclude Include="PBEngine.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BamtingScene.cpp" />
+    <ClCompile Include="PoolScene.cpp" />
     <ClCompile Include="Extras\Camera.cpp" />
     <ClCompile Include="Extras\GLFontRenderer.cpp" />
     <ClCompile Include="Extras\PBRenderer.cpp" />
