@@ -2,7 +2,8 @@
 #include <iostream>
 
 #include "PBEngine.h"
-#include "Extras/PBRenderer.h"
+#include "Extras/UserData.h"
+
 #
 namespace PhysBamt
 {
@@ -28,37 +29,37 @@ namespace PhysBamt
 		///PhysX functions
 		void InitPhysX()
 		{
-			//foundation
+			// Initialize the PhysX Foundation
 			if (!foundation) {
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
+				#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
 				foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
-#else
+				#else
 				foundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
-#endif
+				#endif
 			}
 
 			if (!foundation)
-				throw new Exception("PhysicsEngine::PxInit, Could not create the PhysX SDK foundation.");
+				throw new Exception("PhysBamt::Physics::PxInit, Could not create the PhysX SDK foundation.");
 
-			//visual debugger
+			// Initialize the physX Visual Debugger
 			if (!pvd) {
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
+				#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
 				pvd = PxVisualDebuggerExt::createConnection(physics->getPvdConnectionManager(), "localhost", 5425, 100,
 					PxVisualDebuggerExt::getAllConnectionFlags());
-#else
+				#else
 				pvd = PxCreatePvd(*foundation);
 				PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10);
 				pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
-#endif
+				#endif
 			}
 
 			//physics
 			if (!physics)
-#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
+				#if PX_PHYSICS_VERSION < 0x304000 // SDK 3.3
 				physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale());
-#else
+				#else
 				physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), true, pvd);
-#endif
+				#endif
 
 			if (!physics)
 				throw new Exception("PhysicsEngine::PxInit, Could not initialise the PhysX SDK.");
@@ -69,7 +70,7 @@ namespace PhysBamt
 			if (!cooking)
 				throw new Exception("PhysicsEngine::PxInit, Could not initialise the cooking component.");
 
-			//create a deafult material
+			// Create a default material for all shapes to use.
 			CreateMaterial();
 		}
 
@@ -101,15 +102,24 @@ namespace PhysBamt
 			if (index < physics->getMaterials((PxMaterial**)&materials.front(), (PxU32)materials.size()))
 				return materials[index];
 			else
-				return 0;
+				return nullptr;
 		}
 
-		PxMaterial* CreateMaterial(PxReal sf, PxReal df, PxReal cr)
+		/// <summary>
+		///	Creates a new material with the specified coefficients.
+		/// </summary>
+		/// <param name = "sf"> Static Friction </param>
+		/// <param name = "df"> Dynamic Friction </param>
+		/// <param name = "cr"> Restitution (AKA Bounciness) </param>
+		PxMaterial* CreateMaterial(const PxReal sf, const PxReal df, const PxReal cr)
 		{
 			return physics->createMaterial(sf, df, cr);
 		}
-
-		///Actor methods
+		
+		Actor::~Actor()
+		{
+			actor->release();
+		}
 
 		PxActor* Actor::Get()
 		{
@@ -184,6 +194,7 @@ namespace PhysBamt
 			}
 		}
 
+
 		void Actor::SetupFiltering(PxU32 filterGroup, PxU32 filterMask, PxU32 shape_index)
 		{
 			std::vector<PxShape*> shape_list = GetShapes(shape_index);
@@ -222,6 +233,7 @@ namespace PhysBamt
 
 		DynamicActor::~DynamicActor()
 		{
+			// Clear User Data
 			for (unsigned int i = 0; i < colors.size(); i++)
 				delete (UserData*)GetShape(i)->userData;
 		}
@@ -280,7 +292,7 @@ namespace PhysBamt
 				sceneDesc.cpuDispatcher = mCpuDispatcher;
 			}
 
-			sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+			sceneDesc.filterShader = filter_shader;
 
 			px_scene = GetPhysics()->createScene(sceneDesc);
 
@@ -319,14 +331,17 @@ namespace PhysBamt
 				accumulator -= fixedDeltaTime;
 			}
 
-			if (Engine::renderMode == Engine::DEBUG || Engine::renderMode == Engine::BOTH)
+			// TODO: Unused. Remove this if you cant figure out interp!
+			const PxReal interpolationProgress = accumulator / fixedDeltaTime;
+
+			if (PhysBamt::Engine::renderMode == Engine::DEBUG || Engine::renderMode == Engine::BOTH)
 				Renderer::RenderSceneDebug(this, 1.f);
 
 			if (Engine::renderMode == Engine::NORMAL || Engine::renderMode == Engine::BOTH)
 			{
 				std::vector<PxActor*> actors = this->GetAllActors(); 
 				if (!actors.empty())
-					Renderer::RenderScene(this, actors.data(), static_cast<PxU32>(actors.size()));
+					Renderer::RenderScene(actors.data(), static_cast<PxU32>(actors.size()));
 			}
 		}
 

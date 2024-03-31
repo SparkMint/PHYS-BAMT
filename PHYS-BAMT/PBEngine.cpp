@@ -1,22 +1,37 @@
 #include "PBEngine.h"
 
+#include <chrono>
+#include <GL/glut.h>
+
+#include "MyPhysicsEngine.h"
+
 namespace PhysBamt
 {
 	namespace Engine
 	{
+		PxReal deltaTime;
+		RenderMode renderMode = NORMAL;
+		HUDState hudState = HELP;
+		HUD hud;
+		Scene* scene;
+		Camera* camera;
+		
 		// Time points which are used to calculate deltaTime
 		chrono::steady_clock::time_point currentTimePoint;
 		chrono::steady_clock::time_point lastTimePoint;
 
 		// Key Handling
-		const int MAX_KEYS = 256;
-		bool key_state[MAX_KEYS];
+		bool keyStates[256];
+		bool keyStatesPreviousTick[256];
+
+		bool mouseStates[3];
+		bool mouseStatesPreviousTick[3];
 
 		/// Mouse Position
 		int mMouseX = 0;
 		int mMouseY = 0;
 		
-		PxReal gForceStrength = 1;
+		PxReal gForceStrength = .1f;
 		
 		void InitializeEngine(const char* window_name, int width, int height)
 		{
@@ -28,11 +43,11 @@ namespace PhysBamt
 			scene->Init();
 
 			///Init renderer
-			BackgroundColor(PxVec3(150.f / 255.f, 150.f / 255.f, 150.f / 255.f));
+			BackgroundColor(PxVec3(161.f / 255.f, 195.f / 255.f, 255.f / 255.f));
 			SetRenderDetail(40);
 			InitWindow(window_name, width, height);
 			InitializeRenderer();
-			camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f, -.1f, -1.f), 5.f);
+			camera = new Camera(PxVec3(-5.0f, 3.0f, 0.0f), PxVec3(1.f, -.5f, 0.f), 5.f);
 
 			//initialise HUD
 			InitDebugHUD();
@@ -95,7 +110,7 @@ namespace PhysBamt
 		
 		void EngineLoop()
 		{
-			HandleKeyboardInputs();
+			HandleEngineInputs();
 
 			// Calculate DeltaTime using chrono.
 			currentTimePoint = std::chrono::steady_clock::now();
@@ -108,40 +123,22 @@ namespace PhysBamt
 			
 			// Scene handles rendering
 
+			// Store previous tick's key states
+			for (int i = 0; i < 256; ++i)
+			{
+				keyStatesPreviousTick[i] = keyStates[i];	
+			}
+			for (int i = 0; i < 3; ++i)
+			{
+				mouseStatesPreviousTick[i] = mouseStates[i];
+			}
+
 			hud.ActiveScreen(hudState);
 			
 			hud.Render();
 			FinishRendering();
 		}
-
-		//user defined keyboard handlers
-		void UserKeyPress(int key)
-		{
-			switch (toupper(key))
-			{
-				//implement your own
-			case 'R':
-				break;
-			default:
-				break;
-			}
-		}
-
-		void UserKeyRelease(int key)
-		{
-			switch (toupper(key))
-			{
-				//implement your own;
-				break;
-			default:
-				break;
-			}
-		}
-
-		void UserKeyHold(int key)
-		{
-		}
-
+		
 		//handle camera control keys
 		void CameraInput(int key)
 		{
@@ -245,39 +242,55 @@ namespace PhysBamt
 			}
 		}
 
-
 		void OnKeyPressed(unsigned char key, int x, int y)
 		{
-			if (key_state[key] == true)
+			if (keyStates[key] == true)
 				return;
 
-			key_state[key] = true;
+			keyStates[key] = true;
 
 			// I think this is meant to be the escape key?
 			if (key == 27)
 				exit(0);
-
-			UserKeyPress(key);
+			
 		}
-
 
 		void OnKeyReleased(unsigned char key, int x, int y)
 		{
-			key_state[key] = false;
-			UserKeyRelease(key);
+			keyStates[key] = false;
 		}
 		
-		void HandleKeyboardInputs()
+		void HandleEngineInputs()
 		{
-			for (int i = 0; i < MAX_KEYS; i++)
+			for (int i = 0; i < 256; i++)
 			{
-				if (key_state[i]) // if key down
+				// If the key is down.
+				if (keyStates[i])
 				{
 					CameraInput(i);
 					ForceInput(i);
-					UserKeyHold(i);
 				}
 			}
+		}
+
+		bool GetKeyPressed(unsigned char key)
+		{
+			return !keyStatesPreviousTick[key] && keyStates[key];
+		}
+
+		bool GetKeyDown(unsigned char key)
+		{
+			return keyStates[key];
+		}
+
+		bool GetMousePressed(int button)
+		{
+			return !mouseStatesPreviousTick[button] && mouseStates[button];
+		}
+
+		bool GetMouseDown(int button)
+		{
+			return mouseStates[button];
 		}
 
 		void motionCallback(int x, int y)
@@ -293,6 +306,8 @@ namespace PhysBamt
 
 		void mouseCallback(int button, int state, int x, int y)
 		{
+			mouseStates[button] = state == GLUT_DOWN;
+			
 			mMouseX = x;
 			mMouseY = y;
 		}

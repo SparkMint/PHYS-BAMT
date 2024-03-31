@@ -2,8 +2,6 @@
 
 #include <vector>
 #include "PxPhysicsAPI.h"
-#include "Exception.h"
-#include "Extras\UserData.h"
 #include <string>
 
 namespace PhysBamt
@@ -43,12 +41,8 @@ namespace PhysBamt
 			std::string name;
 
 		public:
-			virtual ~Actor() = default;
-			///Constructor
-			Actor()
-				: actor(0)
-			{
-			}
+			Actor() : actor(nullptr){}
+			~Actor();
 
 			PxActor* Get();
 
@@ -69,6 +63,8 @@ namespace PhysBamt
 			virtual void CreateShape(const PxGeometry& geometry, PxReal density) {}
 
 			void SetTrigger(bool value, PxU32 index = -1);
+
+			void SetFilter(PxU32 filter);
 
 			void SetupFiltering(PxU32 filterGroup, PxU32 filterMask, PxU32 shape_index = -1);
 		};
@@ -176,7 +172,7 @@ namespace PhysBamt
 		public:
 			Joint() : joint(0) {}
 
-			PxJoint* Get() { return joint; }
+			PxJoint* Get() const { return joint; }
 		};
 	}
 }

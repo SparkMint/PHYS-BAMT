@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PBMacros.h" />
     <ClInclude Include="PoolScene.h" />
     <ClInclude Include="BasicActors.h" />
     <ClInclude Include="ComplexActors.h" />

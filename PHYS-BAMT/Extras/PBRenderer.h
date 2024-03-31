@@ -1,17 +1,8 @@
 #pragma once
 
 #include "PxPhysicsAPI.h"
-#include "GLFontRenderer.h"
-#include <GL/glut.h>
+#include "../PBPhysics.h"
 #include <string>
-
-namespace PhysBamt
-{
-	namespace Physics
-	{
-		class Scene;
-	}
-}
 
 namespace PhysBamt
 {
@@ -29,7 +20,7 @@ namespace PhysBamt
 		void StartRenderer(const PxVec3& cameraEye, const PxVec3& cameraDir);
 
 		///Render actors
-		void RenderScene(Physics::Scene* scene, PxActor** actors, const PxU32 numActors);
+		void RenderScene(PxActor** actors, const PxU32 numActors);
 
 		///Render debug information
 		void RenderSceneDebug(Physics::Scene* scene, PxReal line_width = 1.f);

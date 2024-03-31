@@ -218,11 +218,11 @@ namespace Physics
 			box = new Box(PxTransform(PxVec3(.0f,.5f,.0f)));
 			box->Color(color_palette[0]);
 			//set collision filter flags
-			// box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
+			box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1);
 			//use | operator to combine more actors e.g.
-			// box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
+			//box->SetupFiltering(FilterGroup::ACTOR0, FilterGroup::ACTOR1 | FilterGroup::ACTOR2);
 			//don't forget to set your flags for the matching actor as well, e.g.:
-			// box2->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
+			box2->SetupFiltering(FilterGroup::ACTOR1, FilterGroup::ACTOR0);
 			box->Name("Box1");
 			Add(box);
 

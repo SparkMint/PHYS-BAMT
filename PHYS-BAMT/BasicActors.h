@@ -4,10 +4,25 @@
 #include <iostream>
 #include <iomanip>
 
+#include "Exception.h"
+
 namespace PhysBamt
 {
 	namespace Physics
 	{
+		struct PoolFilterGroup
+		{
+			enum Filters
+			{
+				CUEACTIVE   = (1 << 0),
+				CUEINACTIVE = (1 << 1),
+				CUEBALL     = (1 << 2),
+				BALLS       = (1 << 3),
+				TABLE       = (1 << 4)
+			};
+		};
+
+		
 		///Plane class
 		class Plane : public StaticActor
 		{
@@ -73,6 +88,8 @@ namespace PhysBamt
 			{
 				CreateShape(PxCapsuleGeometry(dimensions.x, dimensions.y), density);
 			}
+
+	
 		};
 
 		///The ConvexMesh class
@@ -164,13 +181,13 @@ namespace PhysBamt
 			}
 		};
 
-		//Distance joint with the springs switched on
+		// Distance joint
 		class DistanceJoint : public Joint
 		{
 		public:
 			DistanceJoint(Actor* actor0, const PxTransform& localFrame0, Actor* actor1, const PxTransform& localFrame1)
 			{
-				PxRigidActor* px_actor0 = 0;
+				PxRigidActor* px_actor0 = nullptr;
 				if (actor0)
 					px_actor0 = (PxRigidActor*)actor0->Get();
 
@@ -181,32 +198,32 @@ namespace PhysBamt
 				Stiffness(1.f);
 			}
 
-			void Stiffness(PxReal value)
+			void Stiffness(PxReal value) const
 			{
 				((PxDistanceJoint*)joint)->setStiffness(value);
 			}
 
-			PxReal Stiffness()
+			PxReal Stiffness() const
 			{
 				return ((PxDistanceJoint*)joint)->getStiffness();
 			}
 
-			void Damping(PxReal value)
+			void Damping(PxReal value) const
 			{
 				((PxDistanceJoint*)joint)->setDamping(value);
 			}
 
-			PxReal Damping()
+			PxReal Damping() const
 			{
 				return ((PxDistanceJoint*)joint)->getDamping();
 			}
 		};
 
-		///Revolute Joint
-		class RevoluteJoint : public Joint
+		// AKA Revolute Joint
+		class HingeJoint : public Joint
 		{
 		public:
-			RevoluteJoint(Actor* actor0, const PxTransform& localFrame0, Actor* actor1, const PxTransform& localFrame1)
+			HingeJoint(Actor* actor0, const PxTransform& localFrame0, Actor* actor1, const PxTransform& localFrame1)
 			{
 				PxRigidActor* px_actor0 = 0;
 				if (actor0)
@@ -247,7 +264,114 @@ namespace PhysBamt
 			}
 		};
 
-		///Revolute Joint
+		// Spherical Joint
+		class SphericalJoint : public Joint
+		{
+		public:
+			SphericalJoint(Actor* actor0, const PxTransform& localFrame0, Actor* actor1, const PxTransform& localFrame1)
+			{
+				PxRigidActor* px_actor0 = 0;
+				if (actor0)
+					px_actor0 = (PxRigidActor*)actor0->Get();
+
+				joint = PxSphericalJointCreate(*GetPhysics(), px_actor0, localFrame0, (PxRigidActor*)actor1->Get(), localFrame1);
+				joint->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+			}
+
+			void SetLimits(PxReal yLimit, PxReal zLimit)
+			{
+				((PxSphericalJoint*)joint)->setLimitCone(PxJointLimitCone(yLimit, zLimit, 0.01f));
+				((PxSphericalJoint*)joint)->setSphericalJointFlag(PxSphericalJointFlag::eLIMIT_ENABLED, true);
+			}
+		};
+
+		// AKA D6 Joint. By default this will be completely locked. So it can also be considered a fixed joint.
+		class ConfigurableJoint : public Joint
+		{
+		public:
+			ConfigurableJoint(Actor* actor0, const PxTransform& localFrame0, Actor* actor1, const PxTransform& localFrame1)
+			{
+				PxRigidActor* px_actor0 = 0;
+				if (actor0)
+					px_actor0 = (PxRigidActor*)actor0->Get();
+
+				joint = PxD6JointCreate(*GetPhysics(), px_actor0, localFrame0, (PxRigidActor*)actor1->Get(), localFrame1);
+				joint->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+			}
+
+			void SetLinearMotions(PxD6Motion::Enum xMotion, PxD6Motion::Enum yMotion, PxD6Motion::Enum zMotion) const
+			{
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eX, xMotion);
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eY, yMotion);
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eZ, zMotion);
+			}
+
+			void SetRotationalMotions(PxD6Motion::Enum xMotion, PxD6Motion::Enum yMotion, PxD6Motion::Enum zMotion) const
+			{
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eTWIST, xMotion);
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eSWING1, yMotion);
+				((PxD6Joint*)joint)->setMotion(PxD6Axis::eSWING2, zMotion);
+			}
+
+			void SetLinearLimits(PxReal limit, PxSpring limitSpring) const
+			{
+				((PxD6Joint*)joint)->setLinearLimit(PxJointLinearLimit(limit, limitSpring));
+			}
+
+			void SetAngularXLimit(const PxReal& lowerLimit, const PxReal& upperLimit, PxSpring limitSpring) const
+			{
+				((PxD6Joint*)joint)->setTwistLimit(PxJointAngularLimitPair(lowerLimit, upperLimit, limitSpring));
+			}
+
+			void SetAngularYZLimit(const PxReal& yLimit, const PxReal& zLimit, PxSpring limitSpring) const
+			{
+				((PxD6Joint*)joint)->setSwingLimit(PxJointLimitCone(yLimit, zLimit, limitSpring));
+			}
+
+			void SetSlerpDrive(PxReal spring, PxReal damping, PxReal maxStrength = PX_MAX_F32, bool isAccelerationDrive = false) const
+			{
+				((PxD6Joint*)joint)->setDrive(PxD6Drive::Enum::eSLERP, PxD6JointDrive(spring, damping, maxStrength, isAccelerationDrive));
+			}
+
+			void SetLinearDrives(PxReal spring, PxReal damping, PxReal maxStrength = PX_MAX_F32, bool isAccelerationDrive = false) const
+			{
+				SetXDrive(spring, damping, maxStrength, isAccelerationDrive);
+				SetYDrive(spring, damping, maxStrength, isAccelerationDrive);
+				SetZDrive(spring, damping, maxStrength, isAccelerationDrive);
+			}
+
+			void SetXDrive(PxReal spring, PxReal damping, PxReal maxStrength = PX_MAX_F32, bool isAccelerationDrive = false) const
+			{
+				((PxD6Joint*)joint)->setDrive(PxD6Drive::Enum::eX, PxD6JointDrive(spring, damping, maxStrength, isAccelerationDrive));
+			}
+
+			void SetYDrive(PxReal spring, PxReal damping, PxReal maxStrength = PX_MAX_F32, bool isAccelerationDrive = false) const
+			{
+				((PxD6Joint*)joint)->setDrive(PxD6Drive::Enum::eY, PxD6JointDrive(spring, damping, maxStrength, isAccelerationDrive));
+			}
+			
+			void SetZDrive(PxReal spring, PxReal damping, PxReal maxStrength = PX_MAX_F32, bool isAccelerationDrive = false) const
+			{
+				((PxD6Joint*)joint)->setDrive(PxD6Drive::Enum::eZ, PxD6JointDrive(spring, damping, maxStrength, isAccelerationDrive));
+			}
+
+			void UpdateTargetPose(const PxTransform& pose) const
+			{
+				((PxD6Joint*)joint)->setDrivePosition(pose);
+			}
+
+			void UpdateTargetPose(const PxVec3& position, const PxQuat& rotation) const
+			{
+				((PxD6Joint*)joint)->setDrivePosition(PxTransform(position, rotation));
+			}
+
+			void UpdateJointAnchor(PxJointActorIndex::Enum actorIndex, PxVec3 position, PxQuat rotation) const
+			{
+				joint->setLocalPose(actorIndex, PxTransform(position, rotation));
+			}
+		};
+
+		/// AKA Prismatic Joint
 		class LinearJoint : public Joint
 		{
 		public:
@@ -261,7 +385,7 @@ namespace PhysBamt
 				joint->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
 			}
 
-			void SetLimits(PxReal lower, PxReal upper, PxSpring spring)
+			void SetLimits(PxReal lower, PxReal upper, PxSpring spring) const
 			{
 				((PxPrismaticJoint*)joint)->setLimit(PxJointLinearLimitPair(lower, upper, spring));
 				((PxPrismaticJoint*)joint)->setPrismaticJointFlag(PxPrismaticJointFlag::eLIMIT_ENABLED, true);

@@ -1,8 +1,10 @@
 #include "PBRenderer.h"
+#include "UserData.h"
 #include <iostream>
 #include <vector>
-#include "UserData.h"
-#include "../PBPhysics.h"
+#include <GL/glut.h>
+
+#include "GLFontRenderer.h"
 
 using namespace std;
 
@@ -275,7 +277,7 @@ namespace PhysBamt
 			// Setup camera
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
-			gluPerspective(60.f, (float)glutGet(GLUT_WINDOW_WIDTH) / (float)glutGet(GLUT_WINDOW_HEIGHT), 1.f, 10000.f);
+			gluPerspective(60.f, (float)glutGet(GLUT_WINDOW_WIDTH) / (float)glutGet(GLUT_WINDOW_HEIGHT), 0.2f, 10000.f);
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
@@ -287,7 +289,7 @@ namespace PhysBamt
 			background_color = color;
 		}
 		
-		void RenderScene(Physics::Scene* scene, PxActor** actors, const PxU32 numActors)
+		void RenderScene(PxActor** actors, const PxU32 numActors)
 		{
 			PxVec3 shadow_color = default_color * 0.9;
 			for (PxU32 i = 0; i < numActors; i++)
@@ -302,16 +304,16 @@ namespace PhysBamt
 					std::vector<PxShape*> shapes(rigid_actor->getNbShapes());
 					rigid_actor->getShapes(&shapes.front(), (PxU32)shapes.size());
 
-					for (PxU32 j = 0; j < shapes.size(); j++)
+					for (const auto shape : shapes)
 					{
-						const PxShape* shape = shapes[j];
 						PxTransform pose = PxShapeExt::getGlobalPose(*shape, *shape->getActor());
 						PxGeometryHolder h = shape->getGeometry();
-						//move the plane slightly down to avoid visual artefacts
+						
+						//move the plane slightly down to avoid visual artefacts 
 						if (h.getType() == PxGeometryType::ePLANE)
 						{
 							pose.q *= PxQuat(PxHalfPi, PxVec3(0.f, 0.f, 1.f));
-							pose.p += PxVec3(0, -0.01, 0);
+							pose.p += PxVec3(0, -0.01f, 0);
 						}
 
 						PxMat44 shapePose(pose);
