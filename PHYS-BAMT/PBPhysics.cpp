@@ -196,7 +196,6 @@ namespace PhysBamt
 			}
 		}
 
-
 		void Actor::SetupFiltering(PxU32 filterGroup, PxU32 filterMask, PxU32 shape_index)
 		{
 			std::vector<PxShape*> shape_list = GetShapes(shape_index);
@@ -323,8 +322,6 @@ namespace PhysBamt
 				dt = 0.25f;
 
 			accumulator += dt;
-
-			Update(dt);
 			
 			while (accumulator >= fixedDeltaTime)
 			{
@@ -333,6 +330,8 @@ namespace PhysBamt
 				px_scene->fetchResults(true);
 				accumulator -= fixedDeltaTime;
 			}
+
+			Update(dt);
 
 			// TODO: Unused. Remove this if you cant figure out interp!
 			const PxReal interpolationProgress = accumulator / fixedDeltaTime;

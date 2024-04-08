@@ -25,8 +25,6 @@ namespace PhysBamt
 			PAUSE = 2
 		};
 		
-
-		
 		void InitializeEngine(const char* window_name, int width = 512, int height = 512);
 		void StartEngine();
 		void EngineLoop();
@@ -50,7 +48,6 @@ namespace PhysBamt
 		void motionCallback(int x, int y);
 		void mouseCallback(int button, int state, int x, int y);
 		void ExitCallback(void);
-
 
 		void ToggleRenderMode();
 		void ToggleHUDMode();

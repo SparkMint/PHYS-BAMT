@@ -306,6 +306,8 @@ namespace PhysBamt
 
 					for (const auto shape : shapes)
 					{
+						if (shape->getFlags() & PxShapeFlag::eTRIGGER_SHAPE)
+							continue;
 						PxTransform pose = PxShapeExt::getGlobalPose(*shape, *shape->getActor());
 						PxGeometryHolder h = shape->getGeometry();
 						

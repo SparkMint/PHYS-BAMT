@@ -15,7 +15,7 @@ namespace PhysBamt
 	const void* constantBlock,
 	PxU32 constantBlockSize)
 	{
-		if ((filterData0.word0 == PoolFilterGroup::CUEINACTIVE && 
+		if ((filterData0.word0 == PoolFilterGroup::CUEINACTIVE &&
 		(filterData1.word0 == PoolFilterGroup::CUEBALL || 
 		filterData1.word0 == PoolFilterGroup::BALLS)) ||
 		(filterData1.word0 == PoolFilterGroup::CUEINACTIVE && 
@@ -33,21 +33,52 @@ namespace PhysBamt
 			return PxFilterFlag::eSUPPRESS;
 		}
 		
+		if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+		{
+			if (filterData0.word0 & PoolFilterGroup::BALLS)
+			{
+				pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+				return PxFilterFlags();
+			}
+			if (filterData0.word0 & PoolFilterGroup::CUEBALL)
+			{
+				pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+				return PxFilterFlags();
+			}
+			return PxFilterFlag::eSUPPRESS;
+		}
+
 		pairFlags = PxPairFlag::eSOLVE_CONTACT;
 		pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
 		pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-		
 		return PxFilterFlags();
 	}
 	
 	class PoolSceneEventCallback : public PxSimulationEventCallback
 	{
-		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count) {}
-		virtual void onContact(const PxContactPairHeader &pairHeader, const PxContactPair *pairs, PxU32 nbPairs){}
-		virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
-		virtual void onWake(PxActor **actors, PxU32 count) {}
-		virtual void onSleep(PxActor **actors, PxU32 count) {}
-		virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
+		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count)
+		{
+			for (size_t i = 0; i < count; i++)
+			{
+				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::BALLS && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				{
+					score++;
+				}
+
+				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::CUEBALL && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				{
+					pairs[i].otherActor->setGlobalPose(PxTransform(PxVec3(0.f, 5.f, 0.f), PxIdentity));
+				}
+			}
+		}
+		virtual void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {}
+		virtual void onConstraintBreak(PxConstraintInfo* constraints, PxU32 count) {}
+		virtual void onWake(PxActor** actors, PxU32 count) {}
+		virtual void onSleep(PxActor** actors, PxU32 count) {}
+		virtual void onAdvance(const PxRigidBody* const* bodyBuffer, const PxTransform* poseBuffer, const PxU32 count) {}
+
+		public:
+			int score;
 	};
 
 	class PoolScene : public Scene
@@ -66,6 +97,10 @@ namespace PhysBamt
 
 		Capsule* cue;
 		ConfigurableJoint* cueJoint;
+
+		Sphere* hugeCueBall;
+		Capsule* hugeCue;
+		LinearJoint* hugeCueJoint;
 		
 		PxMaterial* cueMaterial;
 		PoolSceneEventCallback* eventCallback;

@@ -22,13 +22,13 @@ namespace PhysBamt
 		SetVisualisation();
 
 		// This scene is our main gameplay scene, give it a high update rate!
-		SetFixedDeltaTime(1.f / 144.f);
+		SetFixedDeltaTime(1.f / 60.f);
 
 		// Set default material stuff.
 		GetMaterial()->setDynamicFriction(.2f);
 
 		plane = new Plane();
-		plane->Color(PxVec3(210.f / 255.f, 210.f / 255.f, 210.f / 255.f));
+		plane->Color(PxVec3(0.f / 255.f, 200.f / 255.f, 0.f / 255.f));
 		Add(plane);
 
 		table = new PoolTable(PxVec3(0.f, 0.f, 0.f));
@@ -40,6 +40,8 @@ namespace PhysBamt
 		cueMaterial = CreateMaterial(.6f, .6f, .81f);
 		cue = new Capsule(PxVec3(-2.f, 5.f, 0.f), PxIdentity, PxVec2(0.02f, 1.44f));
 		cue->Material(cueMaterial, 0);
+		cue->CreateShape(PxBoxGeometry(PxVec3(.05f, .02f, .02f)), 1.f);
+		cue->GetShape(1)->setLocalPose(PxTransform(PxVec3(-1.44f - .05f, 0.f, 0.f)));
 		cue->Color(PxVec3(84.f / 255, 43.f / 255.f, 16.f / 255.f));
 		// Enable Continuous Collision Detection for the cue.
 		((PxRigidDynamic*)cue->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
@@ -56,6 +58,9 @@ namespace PhysBamt
 
 		cueJoint->SetSlerpDrive(25.f, 2.f, .5f);
 		cueJoint->SetLinearDrives(25.f, 2.5f, .25f);
+
+		hugeCueBall = new Sphere(PxVec3(-50.f, 10.f, 0.f), PxIdentity, .061f * 100);
+		Add(hugeCueBall);
 	}
 
 	PxReal maxCameraSpeed = 1.f;
@@ -65,6 +70,43 @@ namespace PhysBamt
 	
 	void PoolScene::Update(PxReal dt)
 	{
+		Engine::hud.Clear();
+
+		// EMPTY SCREEN
+		Engine::hud.AddLine(Engine::EMPTY, "");
+
+		// HELP SCREEN
+					// EMPTY SCREEN
+		Engine::hud.AddLine(Engine::EMPTY, "");
+
+		// HELP SCREEN
+		Engine::hud.AddLine(Engine::HELP, "\n"
+			"SIMULATION \n"
+			"F9 - Select next actor \n"
+			"F10 - Pause \n"
+			"F12 - Reset Everything\n"
+			"\n"
+			"DISPLAY \n"
+			"F5 - Toggle Debug HUD \n"
+			"F6 - Render Shadows \n"
+			"F7 - Debug/Normal/Both Render Modes \n"
+			"\n"
+			"CAMERA \n"
+			"W,S,A,D,E,Q - Forward, Backward, Left, Right, Up, Down \n"
+			"RMB + Mouse - Look Around \n"
+			"F8 - Reset View \n"
+			"SCORE \n"
+			+ std::to_string(eventCallback->score));
+
+		// PAUSE SCREEN
+		Engine::hud.AddLine(Engine::PAUSE, "\n"
+			"SIMULATION PAUSED. Press F10 to continue.");
+
+		// FONT SETTINGS
+		Engine::hud.FontSize(0.018f);
+		Engine::hud.Color(PxVec3(0.f, 0.f, 0.f));
+
+
 		if(Engine::GetKeyDown('w') || Engine::GetKeyDown('a') || Engine::GetKeyDown('s') || Engine::GetKeyDown('d') || Engine::GetKeyDown('q') || Engine::GetKeyDown('e'))
 			currentCameraSpeed += dt * acceleration;
 		else
@@ -181,8 +223,6 @@ namespace PhysBamt
 		posePosition += Engine::camera->getDir() * cueCurrentOffset;
 		cueJoint->UpdateTargetPose(posePosition, poseRotation);
 	}
-
-
 }
 
 

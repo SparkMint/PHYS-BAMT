@@ -39,6 +39,7 @@ namespace PhysBamt
 			PxActor* actor;
 			std::vector<PxVec3> colors;
 			std::string name;
+			bool shouldRender = true;
 
 		public:
 			Actor() : actor(nullptr){}

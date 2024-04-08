@@ -158,6 +158,8 @@ namespace PhysBamt
 
 			PxMaterial* clothMaterial = nullptr;
 			PxMaterial* pocketMaterial = nullptr;
+
+			Box* ballPotTrigger;
 			
 		public:
 			PoolTable(const PxVec3& position, const PxQuat& rotation = PxIdentity)
@@ -170,28 +172,32 @@ namespace PhysBamt
 				clothMaterial = CreateMaterial(.015f, .2f, .5f);
 				pocketMaterial = CreateMaterial(.015f, .2f, .0f);
 
+				ballPotTrigger = new Box(position + PxVec3(0, 1.25f, 0), PxIdentity, tableTopSize);
+				ballPotTrigger->SetKinematic(true);
+				ballPotTrigger->SetTrigger(true);
+
 				// Set our tabletop in such a way that the top of the table is at the origin.
 				tableTop = new PoolTableTop(position + PxVec3(0, tableSurfaceHeight - tableTopSize.y, 0), rotation);
 				tableTop->Color(PxVec3(0.f / 255.f, 200.f / 255.f, 0.f / 255.f));
 				tableTop->Material(clothMaterial, -1);
 				tableTop->SetKinematic(true);
 
-				bottomCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x - frameAndCushionThickness / 2, 1.5f, 0.f), PxIdentity, PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.z - pocketGapSize));
+				bottomCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x - frameAndCushionThickness / 2, 1.5f, 0.f), PxIdentity, PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.z - pocketGapSize));
 				bottomCushion->SetKinematic(true);
 
-				topCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x + frameAndCushionThickness / 2, 1.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.z - pocketGapSize));
+				topCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x + frameAndCushionThickness / 2, 1.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.z - pocketGapSize));
 				topCushion->SetKinematic(true);
 				
-				topLeftCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.x / 2 - .25f));
+				topLeftCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
 				topLeftCushion->SetKinematic(true);
 
-				bottomLeftCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.x / 2 - .25f));
+				bottomLeftCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
 				bottomLeftCushion->SetKinematic(true);
 				
-				topRightCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.x / 2 - .25f));
+				topRightCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
 				topRightCushion->SetKinematic(true);
 				
-				bottomRightCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f, tableTopSize.x / 2 - .25f));
+				bottomRightCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
 				bottomRightCushion->SetKinematic(true);
 				
 				topLeftPocket = new PoolTableCornerPocket(position + PxVec3(tableTopSize.x - frameAndCushionThickness, 1.5f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(0.f), PxVec3Up));
@@ -217,6 +223,8 @@ namespace PhysBamt
 				rightPocket = new PoolTableSidePocket(position + PxVec3(0.f, 1.5f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(180.f), PxVec3Up));
 				rightPocket->SetKinematic(true);
 				rightPocket->Material(pocketMaterial);
+
+		
 			}
 
 			void AddToScene(Scene* scene)
@@ -236,6 +244,7 @@ namespace PhysBamt
 
 				scene->Add(leftPocket);
 				scene->Add(rightPocket);
+				scene->Add(ballPotTrigger);
 			}
 		};
 

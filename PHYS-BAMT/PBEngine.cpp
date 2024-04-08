@@ -55,9 +55,6 @@ namespace PhysBamt
 			InitializeRenderer();
 			camera = new Camera(PxVec3(-5.0f, 3.0f, 0.0f), PxVec3(1.f, -.5f, 0.f));
 
-			//initialise HUD
-			InitDebugHUD();
-
 			///Assign callbacks
 			// Engine Loop
 			glutDisplayFunc(EngineLoop);
