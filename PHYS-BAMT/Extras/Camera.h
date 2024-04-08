@@ -12,50 +12,50 @@ namespace PhysBamt
 		///Camera class
 		class Camera
 		{
-		private:
 			PxVec3	eye, eye_init;
 			PxVec3	dir, dir_init;
-			PxReal speed, speed_init;
 
 		public:
-			///constructor
-			Camera(const PxVec3& _eye, const PxVec3& _dir, const PxReal _speed);
+			/// Camera Constructor
+			Camera(const PxVec3& _eye, const PxVec3& _dir);
 
 			///reset view
 			void Reset();
 
-			///handle camera motion
-			void Motion(int dx, int dy, PxReal delta_time);
-
-			///handle analog move
-			void AnalogMove(float x, float y);
-
 			///get camera position
 			PxVec3 getEye() const;
+
+			void UpdatePosition(PxVec3 newPos, PxVec3 newDir);
 
 			///get camera direction
 			PxVec3 getDir() const;
 
 			///get camera transformation
 			PxTransform	getTransform() const;
+			
+			///handle analog move
+			void AnalogMove(float x, float y);
+
+			///handle camera motion
+			void Look(int dx, int dy, PxReal speed, PxReal delta_time);
 
 			///move camera forward
-			void MoveForward(PxReal delta_time);
+			void MoveForward(PxReal speed, PxReal delta_time);
 
 			///move camera backward
-			void MoveBackward(PxReal delta_time);
+			void MoveBackward(PxReal speed, PxReal delta_time);
 
 			///move camera left
-			void MoveLeft(PxReal delta_time);
+			void MoveLeft(PxReal speed, PxReal delta_time);
 
 			///move camera right
-			void MoveRight(PxReal delta_time);
+			void MoveRight(PxReal speed, PxReal delta_time);
 
 			///move camera up
-			void MoveUp(PxReal delta_time);
+			void MoveUp(PxReal speed, PxReal delta_time);
 
 			///move camera down
-			void MoveDown(PxReal delta_time);
+			void MoveDown(PxReal speed, PxReal delta_time);
 		};
 	}
 }

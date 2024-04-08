@@ -30,6 +30,12 @@ namespace PhysBamt
 		/// Mouse Position
 		int mMouseX = 0;
 		int mMouseY = 0;
+
+		int mMouseXLastTick = 0;
+		int mMouseYLastTick = 0;
+
+		int mouseDeltaX = 0;
+		int mouseDeltaY = 0;
 		
 		PxReal gForceStrength = .1f;
 		
@@ -47,7 +53,7 @@ namespace PhysBamt
 			SetRenderDetail(40);
 			InitWindow(window_name, width, height);
 			InitializeRenderer();
-			camera = new Camera(PxVec3(-5.0f, 3.0f, 0.0f), PxVec3(1.f, -.5f, 0.f), 5.f);
+			camera = new Camera(PxVec3(-5.0f, 3.0f, 0.0f), PxVec3(1.f, -.5f, 0.f));
 
 			//initialise HUD
 			InitDebugHUD();
@@ -64,6 +70,7 @@ namespace PhysBamt
 			// Mouse
 			glutMouseFunc(mouseCallback);
 			glutMotionFunc(motionCallback);
+			glutPassiveMotionFunc(motionCallback);
 
 			// Exit
 			atexit(ExitCallback);
@@ -82,7 +89,7 @@ namespace PhysBamt
 					 "SIMULATION \n"
 					 "F9 - Select next actor \n"
 					 "F10 - Pause \n"
-					 "F12 - Reset \n"
+					 "F12 - Reset Everything\n"
 					 "\n"
 					 "DISPLAY \n"
 					 "F5 - Toggle Debug HUD \n"
@@ -123,7 +130,7 @@ namespace PhysBamt
 			
 			// Scene handles rendering
 
-			// Store previous tick's key states
+			// Store this current tick's key states for the next tick.
 			for (int i = 0; i < 256; ++i)
 			{
 				keyStatesPreviousTick[i] = keyStates[i];	
@@ -133,38 +140,17 @@ namespace PhysBamt
 				mouseStatesPreviousTick[i] = mouseStates[i];
 			}
 
+			// Store position of mouse for delta comparison at start of loop.
+			mMouseXLastTick = mMouseX;
+			mMouseYLastTick = mMouseY;
+
+			mouseDeltaX = 0;
+			mouseDeltaY = 0;
+
 			hud.ActiveScreen(hudState);
 			
 			hud.Render();
 			FinishRendering();
-		}
-		
-		//handle camera control keys
-		void CameraInput(int key)
-		{
-			switch (toupper(key))
-			{
-			case 'W':
-				camera->MoveForward(deltaTime);
-				break;
-			case 'S':
-				camera->MoveBackward(deltaTime);
-				break;
-			case 'A':
-				camera->MoveLeft(deltaTime);
-				break;
-			case 'D':
-				camera->MoveRight(deltaTime);
-				break;
-			case 'E':
-				camera->MoveUp(deltaTime);
-				break;
-			case 'Q':
-				camera->MoveDown(deltaTime);
-				break;
-			default:
-				break;
-			}
 		}
 
 		//handle force control keys
@@ -236,6 +222,7 @@ namespace PhysBamt
 			case GLUT_KEY_F12:
 				//resect scene
 				scene->Reset();
+				camera->Reset();
 				break;
 			default:
 				break;
@@ -267,7 +254,6 @@ namespace PhysBamt
 				// If the key is down.
 				if (keyStates[i])
 				{
-					CameraInput(i);
 					ForceInput(i);
 				}
 			}
@@ -283,6 +269,25 @@ namespace PhysBamt
 			return keyStates[key];
 		}
 
+		int GetMousePosX()
+		{
+			return mMouseX;
+		}
+		int GetMousePosY()
+		{
+			return mMouseY;
+		}
+
+		int GetMouseDeltaX()
+		{
+			return mouseDeltaX;
+		}
+
+		int GetMouseDeltaY()
+		{
+			return mouseDeltaY;
+		}
+
 		bool GetMousePressed(int button)
 		{
 			return !mouseStatesPreviousTick[button] && mouseStates[button];
@@ -295,19 +300,17 @@ namespace PhysBamt
 
 		void motionCallback(int x, int y)
 		{
-			int deltaX = mMouseX - x;
-			int deltaY = mMouseY - y;
-
-			camera->Motion(deltaX, deltaY, deltaTime);
-
 			mMouseX = x;
 			mMouseY = y;
+
+			mouseDeltaX = mMouseXLastTick - x;
+			mouseDeltaY = mMouseYLastTick - y;
 		}
 
 		void mouseCallback(int button, int state, int x, int y)
 		{
 			mouseStates[button] = state == GLUT_DOWN;
-			
+
 			mMouseX = x;
 			mMouseY = y;
 		}

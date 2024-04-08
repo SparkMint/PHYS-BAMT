@@ -61,6 +61,8 @@ namespace PhysBamt
 				physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), true, pvd);
 				#endif
 
+			PxInitExtensions(*physics, pvd);
+
 			if (!physics)
 				throw new Exception("PhysicsEngine::PxInit, Could not initialise the PhysX SDK.");
 
@@ -285,6 +287,7 @@ namespace PhysBamt
 		{
 			//scene
 			PxSceneDesc sceneDesc(GetPhysics()->getTolerancesScale());
+			sceneDesc.bounceThresholdVelocity = 0.175f * 9.81f;
 
 			if (!sceneDesc.cpuDispatcher)
 			{
@@ -334,7 +337,7 @@ namespace PhysBamt
 			// TODO: Unused. Remove this if you cant figure out interp!
 			const PxReal interpolationProgress = accumulator / fixedDeltaTime;
 
-			if (PhysBamt::Engine::renderMode == Engine::DEBUG || Engine::renderMode == Engine::BOTH)
+			if (Engine::renderMode == Engine::DEBUG || Engine::renderMode == Engine::BOTH)
 				Renderer::RenderSceneDebug(this, 1.f);
 
 			if (Engine::renderMode == Engine::NORMAL || Engine::renderMode == Engine::BOTH)

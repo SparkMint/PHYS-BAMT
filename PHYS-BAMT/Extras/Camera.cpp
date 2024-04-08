@@ -7,11 +7,10 @@ namespace PhysBamt
 	{
 		using namespace physx;
 
-		Camera::Camera(const PxVec3& _eye, const PxVec3& _dir, PxReal _speed)
+		Camera::Camera(const PxVec3& _eye, const PxVec3& _dir)
 		{
 			eye_init = _eye;
 			dir_init = _dir.getNormalized();
-			speed_init = _speed;
 			Reset();
 		}
 
@@ -19,10 +18,9 @@ namespace PhysBamt
 		{
 			eye = eye_init;
 			dir = dir_init;
-			speed = speed_init;
 		}
 
-		void Camera::Motion(int dx, int dy, PxReal delta_time)
+		void Camera::Look(int dx, int dy, PxReal speed, PxReal delta_time)
 		{
 			PxVec3 viewY = dir.cross(PxVec3(0, 1, 0)).getNormalized();
 
@@ -46,6 +44,12 @@ namespace PhysBamt
 			return eye;
 		}
 
+		void Camera::UpdatePosition(PxVec3 newPos, PxVec3 newDir)
+		{
+			eye = newPos;
+			dir = newDir;
+		}
+
 		PxVec3 Camera::getDir() const
 		{
 			return dir;
@@ -62,34 +66,34 @@ namespace PhysBamt
 			return PxTransform(eye, PxQuat(m));
 		}
 
-		void Camera::MoveForward(PxReal delta_time)
+		void Camera::MoveForward(PxReal speed ,PxReal delta_time)
 		{
 			eye += dir * speed * delta_time;
 		}
 
-		void Camera::MoveBackward(PxReal delta_time)
+		void Camera::MoveBackward(PxReal speed, PxReal delta_time)
 		{
 			eye -= dir * speed * delta_time;
 		}
 
-		void Camera::MoveLeft(PxReal delta_time)
+		void Camera::MoveLeft(PxReal speed, PxReal delta_time)
 		{
 			PxVec3 viewY = dir.cross(PxVec3(0, 1, 0)).getNormalized();
 			eye -= viewY * speed * delta_time;
 		}
 
-		void Camera::MoveRight(PxReal delta_time)
+		void Camera::MoveRight(PxReal speed, PxReal delta_time)
 		{
 			PxVec3 viewY = dir.cross(PxVec3(0, 1, 0)).getNormalized();
 			eye += viewY * speed * delta_time;
 		}
 
-		void Camera::MoveUp(PxReal delta_time)
+		void Camera::MoveUp(PxReal speed, PxReal delta_time)
 		{
 			eye += PxVec3(0, 1, 0) * speed * delta_time;
 		}
 
-		void Camera::MoveDown(PxReal delta_time)
+		void Camera::MoveDown(PxReal speed, PxReal delta_time)
 		{
 			eye -= PxVec3(0, 1, 0) * speed * delta_time;
 		}

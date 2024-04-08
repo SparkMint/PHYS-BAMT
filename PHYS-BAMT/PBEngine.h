@@ -39,6 +39,11 @@ namespace PhysBamt
 		bool GetKeyPressed(unsigned char key);
 		bool GetKeyDown(unsigned char key);
 
+		int GetMousePosX();
+		int GetMousePosY();
+		int GetMouseDeltaX();
+		int GetMouseDeltaY();
+	
 		bool GetMousePressed(int button);
 		bool GetMouseDown(int button);
 

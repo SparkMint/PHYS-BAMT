@@ -33,6 +33,7 @@
     <ClInclude Include="MyPhysicsEngine.h" />
     <ClInclude Include="PBPhysics.h" />
     <ClInclude Include="PBEngine.h" />
+    <ClInclude Include="PoolTableConvexMeshes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PoolScene.cpp" />

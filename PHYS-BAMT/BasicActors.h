@@ -111,7 +111,7 @@ namespace PhysBamt
 			}
 
 			//mesh cooking (preparation)
-			PxConvexMesh* CookMesh(const PxConvexMeshDesc& mesh_desc)
+			static PxConvexMesh* CookMesh(const PxConvexMeshDesc& mesh_desc)
 			{
 				PxDefaultMemoryOutputStream stream;
 
@@ -171,7 +171,7 @@ namespace PhysBamt
 			{
 			}
 		};
-
+		
 		class PyramidStatic : public TriangleMesh
 		{
 		public:

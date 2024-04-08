@@ -70,6 +70,9 @@ namespace PhysBamt
 		PxMaterial* cueMaterial;
 		PoolSceneEventCallback* eventCallback;
 		
+		void AutoCueBehaviour(PxReal fdt);
+		void MouseCueBehaviour(PxReal fdt);
+		
 	public:
 		PoolScene() : Scene(poolFilterShader) {}
 		
