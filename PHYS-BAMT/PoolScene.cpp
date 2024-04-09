@@ -105,6 +105,8 @@ namespace PhysBamt
 		Engine::hud.AddLine(Engine::EMPTY, "");
 
 		string gameState = currentTimeLeft > 0.f ? std::to_string(currentTimeLeft) : "GAME OVER";
+		string gameResult = eventCallback->score >= eventCallback->winningScore ? "YOU WIN!" : "YOU LOSE!";
+		string score = currentTimeLeft > 0.f ? std::to_string(eventCallback->score) : gameResult;
 
 		// GAME SCREEN
 		Engine::hud.AddLine(Engine::HELP, "\n"
@@ -123,7 +125,7 @@ namespace PhysBamt
 			"\n"
 			"GAME \n"
 			"Time Remaining: " + gameState + "\n"
-			"Score: " + std::to_string(eventCallback->score));
+			"Score: " + score + "\n");
 
 		// PAUSE SCREEN
 		Engine::hud.AddLine(Engine::PAUSE, "\n"

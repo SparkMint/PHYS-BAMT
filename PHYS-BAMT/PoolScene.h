@@ -93,6 +93,7 @@ namespace PhysBamt
 			bool tableUnplayable = false;
 		
 			int score;
+			int winningScore = 5;
 	};
 
 	class PoolScene : public Scene
