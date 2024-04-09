@@ -15,44 +15,6 @@ namespace PhysBamt
 	{
 		// Lists a load of colours for the pool table
 		const vector<PxVec3> poolTablePallete = { PxVec3(0.f / 255.f, 200.f / 255.f, 0.f / 255.f), PxVec3(0.f / 255.f, 0.f / 255.f, 0.f / 255.f), PxVec3(255.f / 255.f, 0.f / 255.f, 0.f / 255.f) };
-		
-		///An example class showing the use of springs (distance joints).
-		class Trampoline
-		{
-			vector<DistanceJoint*> springs;
-			Box* bottom, * top;
-
-		public:
-			Trampoline(const PxVec3& dimensions = PxVec3(1.f, 1.f, 1.f), PxReal stiffness = 1.f, PxReal damping = 1.f)
-			{
-				PxReal thickness = .1f;
-				bottom = new Box(PxTransform(PxVec3(0.f, thickness, 0.f)), PxVec3(dimensions.x, thickness, dimensions.z));
-				top = new Box(PxTransform(PxVec3(0.f, dimensions.y + thickness, 0.f)), PxVec3(dimensions.x, thickness, dimensions.z));
-				springs.resize(4);
-				springs[0] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x, thickness, dimensions.z)), top, PxTransform(PxVec3(dimensions.x, -dimensions.y, dimensions.z)));
-				springs[1] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x, thickness, -dimensions.z)), top, PxTransform(PxVec3(dimensions.x, -dimensions.y, -dimensions.z)));
-				springs[2] = new DistanceJoint(bottom, PxTransform(PxVec3(-dimensions.x, thickness, dimensions.z)), top, PxTransform(PxVec3(-dimensions.x, -dimensions.y, dimensions.z)));
-				springs[3] = new DistanceJoint(bottom, PxTransform(PxVec3(-dimensions.x, thickness, -dimensions.z)), top, PxTransform(PxVec3(-dimensions.x, -dimensions.y, -dimensions.z)));
-
-				for (unsigned int i = 0; i < springs.size(); i++)
-				{
-					springs[i]->Stiffness(stiffness);
-					springs[i]->Damping(damping);
-				}
-			}
-
-			void AddToScene(Scene* scene)
-			{
-				scene->Add(bottom);
-				scene->Add(top);
-			}
-
-			~Trampoline()
-			{
-				for (unsigned int i = 0; i < springs.size(); i++)
-					delete springs[i];
-			}
-		};
 
 		class PoolTableTop : public DynamicActor
 		{
@@ -139,6 +101,9 @@ namespace PhysBamt
 		
 		class PoolTable
 		{
+			PxMaterial* clothMaterial = nullptr;
+			PxMaterial* pocketMaterial = nullptr;
+			
 			PoolTableTop* tableTop;
 
 			PoolTableCushion* bottomCushion;
@@ -156,19 +121,32 @@ namespace PhysBamt
 			PoolTableSidePocket* leftPocket;
 			PoolTableSidePocket* rightPocket;
 
-			PxMaterial* clothMaterial = nullptr;
-			PxMaterial* pocketMaterial = nullptr;
+			ConfigurableJoint* topCushionJoint;
+			ConfigurableJoint* bottomCushionJoint;
+			ConfigurableJoint* topLeftCushionJoint;
+			ConfigurableJoint* bottomLeftCushionJoint;
+			ConfigurableJoint* topRightCushionJoint;
+			ConfigurableJoint* bottomRightCushionJoint;
+
+			ConfigurableJoint* topLeftPocketJoint;
+			ConfigurableJoint* topRightPocketJoint;
+			ConfigurableJoint* bottomLeftPocketJoint;
+			ConfigurableJoint* bottomRightPocketJoint;
+			ConfigurableJoint* rightPocketJoint;
+			ConfigurableJoint* leftPocketJoint;
 
 			Box* ballPotTrigger;
+
+			const PxReal breakForce = 50.f;
+			const PxReal breakTorque = 100.f;
+			const PxVec3 tableTopSize = PxVec3(2.54f, .1f, 1.27f);
+			const PxReal frameAndCushionThickness = .1f;
+			const PxReal pocketGapSize = .3f;
+			const PxReal tableSurfaceHeight = 1.5f;
 			
 		public:
 			PoolTable(const PxVec3& position, const PxQuat& rotation = PxIdentity)
 			{
-				const PxVec3 tableTopSize = PxVec3(2.54f, .1f, 1.27f);
-				constexpr PxReal frameAndCushionThickness = .1f;
-				constexpr PxReal pocketGapSize = .3f;
-				constexpr PxReal tableSurfaceHeight = 1.5f;
-
 				clothMaterial = CreateMaterial(.015f, .2f, .5f);
 				pocketMaterial = CreateMaterial(.015f, .2f, .0f);
 
@@ -180,51 +158,54 @@ namespace PhysBamt
 				tableTop = new PoolTableTop(position + PxVec3(0, tableSurfaceHeight - tableTopSize.y, 0), rotation);
 				tableTop->Color(PxVec3(0.f / 255.f, 200.f / 255.f, 0.f / 255.f));
 				tableTop->Material(clothMaterial, -1);
-				tableTop->SetKinematic(true);
 
 				bottomCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x - frameAndCushionThickness / 2, 1.5f, 0.f), PxIdentity, PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.z - pocketGapSize));
-				bottomCushion->SetKinematic(true);
-
+				bottomCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(-tableTopSize.x - frameAndCushionThickness / 2, 0.1f, 0.f), PxIdentity), bottomCushion, PxTransform(PxVec3Zero, PxIdentity));
+				bottomCushionJoint->SetBreakForce(breakForce, breakTorque);
+				
 				topCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x + frameAndCushionThickness / 2, 1.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.z - pocketGapSize));
-				topCushion->SetKinematic(true);
+				topCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(tableTopSize.x + frameAndCushionThickness / 2, 0.1f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up)), topCushion, PxTransform(PxVec3Zero, PxIdentity));
+				topCushionJoint->SetBreakForce(breakForce, breakTorque);
 				
 				topLeftCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
-				topLeftCushion->SetKinematic(true);
-
+				topLeftCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 0.1f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up)), topLeftCushion, PxTransform(PxVec3Zero, PxIdentity));
+				topLeftCushionJoint->SetBreakForce(breakForce, breakTorque);
+				
 				bottomLeftCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
-				bottomLeftCushion->SetKinematic(true);
+				bottomLeftCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 0.1f, -tableTopSize.z - frameAndCushionThickness / 2), PxQuat(Deg2Rad(-90.f), PxVec3Up)), bottomLeftCushion, PxTransform(PxVec3Zero, PxIdentity));
+				bottomLeftCushionJoint->SetBreakForce(breakForce, breakTorque);
 				
 				topRightCushion = new PoolTableCushion(position + PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
-				topRightCushion->SetKinematic(true);
+				topRightCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(tableTopSize.x / 2 - frameAndCushionThickness / 2, 0.1f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up)), topRightCushion, PxTransform(PxVec3Zero, PxIdentity));
+				topRightCushionJoint->SetBreakForce(breakForce, breakTorque);
 				
 				bottomRightCushion = new PoolTableCushion(position + PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 1.5f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up), PxVec3(frameAndCushionThickness, 1.5f / 2, tableTopSize.x / 2 - .25f));
-				bottomRightCushion->SetKinematic(true);
+				bottomRightCushionJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(-tableTopSize.x / 2 + frameAndCushionThickness / 2, 0.1f, tableTopSize.z + frameAndCushionThickness / 2), PxQuat(Deg2Rad(90.f), PxVec3Up)), bottomRightCushion, PxTransform(PxVec3Zero, PxIdentity));
+				bottomRightCushionJoint->SetBreakForce(breakForce, breakTorque);
 				
 				topLeftPocket = new PoolTableCornerPocket(position + PxVec3(tableTopSize.x - frameAndCushionThickness, 1.5f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(0.f), PxVec3Up));
-				topLeftPocket->SetKinematic(true);
-				topLeftPocket->Material(pocketMaterial);
-
+				topLeftPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(tableTopSize.x - frameAndCushionThickness, 0.1f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(0.f), PxVec3Up)), topLeftPocket, PxTransform(PxVec3Zero, PxIdentity));
+				topLeftPocketJoint->SetBreakForce(breakForce, breakTorque);
+				
 				topRightPocket = new PoolTableCornerPocket(position + PxVec3(tableTopSize.x - frameAndCushionThickness, 1.5f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(270.f), PxVec3Up));
-				topRightPocket->SetKinematic(true);
-				topRightPocket->Material(pocketMaterial);
-
+				topRightPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(tableTopSize.x - frameAndCushionThickness, 0.1f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(270.f), PxVec3Up)), topRightPocket, PxTransform(PxVec3Zero, PxIdentity));
+				topRightPocketJoint->SetBreakForce(breakForce, breakTorque);
+				
 				bottomLeftPocket = new PoolTableCornerPocket(position + PxVec3(-tableTopSize.x + frameAndCushionThickness, 1.5f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(90.f), PxVec3Up));
-				bottomLeftPocket->SetKinematic(true);
-				bottomLeftPocket->Material(pocketMaterial);
-
+				bottomLeftPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(-tableTopSize.x + frameAndCushionThickness, 0.1f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(90.f), PxVec3Up)), bottomLeftPocket, PxTransform(PxVec3Zero, PxIdentity));
+				bottomLeftPocketJoint->SetBreakForce(breakForce, breakTorque);
+				
 				bottomRightPocket = new PoolTableCornerPocket(position + PxVec3(-tableTopSize.x + frameAndCushionThickness, 1.5f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(180.f), PxVec3Up));
-				bottomRightPocket->SetKinematic(true);
-				bottomRightPocket->Material(pocketMaterial);
+				bottomRightPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(-tableTopSize.x + frameAndCushionThickness, 0.1f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(180.f), PxVec3Up)), bottomRightPocket, PxTransform(PxVec3Zero, PxIdentity));
+				bottomRightPocketJoint->SetBreakForce(breakForce, breakTorque);
 				
 				leftPocket = new PoolTableSidePocket(position + PxVec3(0.f, 1.5f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(0.f), PxVec3Up));
-				leftPocket->SetKinematic(true);
-				leftPocket->Material(pocketMaterial);
-
+				leftPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(0.f, 0.1f, -tableTopSize.z + frameAndCushionThickness), PxQuat(Deg2Rad(0.f), PxVec3Up)), leftPocket, PxTransform(PxVec3Zero, PxIdentity));
+				leftPocketJoint->SetBreakForce(breakForce, breakTorque);
+				
 				rightPocket = new PoolTableSidePocket(position + PxVec3(0.f, 1.5f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(180.f), PxVec3Up));
-				rightPocket->SetKinematic(true);
-				rightPocket->Material(pocketMaterial);
-
-		
+				rightPocketJoint = new ConfigurableJoint(tableTop, PxTransform(PxVec3(0.f, 0.1f, tableTopSize.z - frameAndCushionThickness), PxQuat(Deg2Rad(180.f), PxVec3Up)), rightPocket, PxTransform(PxVec3Zero, PxIdentity));
+				rightPocketJoint->SetBreakForce(breakForce, breakTorque);
 			}
 
 			void AddToScene(Scene* scene)
@@ -248,15 +229,34 @@ namespace PhysBamt
 			}
 		};
 
-		class PoolTableSurface : public DynamicActor
+		class PoolCue : public DynamicActor
 		{
-			
+			PxMaterial* cueMaterial = nullptr;
+			PxMaterial* cueTipMaterial = nullptr;
+
+		public:
+			PoolCue(const PxVec3& position, const PxQuat& rotation, PxVec2 dimensions = PxVec2(0.02f, 1.44f), PxReal density = 1.f) : DynamicActor(position, rotation)
+			{
+				cueMaterial = CreateMaterial(.6f, .6f, .81f);
+				cueTipMaterial = CreateMaterial(.6f, .6f, .81f);
+				
+				DynamicActor::CreateShape(PxCapsuleGeometry(dimensions.x, dimensions.y), density);
+				GetShape(0)->setLocalPose(PxTransform(PxVec3(-dimensions.y / 2, 0, 0), PxIdentity));
+
+				DynamicActor::CreateShape(PxBoxGeometry(PxVec3(dimensions.x, dimensions.x, dimensions.x)), density);
+				GetShape(1)->setLocalPose(PxTransform(PxVec3(-dimensions.y * 1.5, 0.f, 0.f)));
+				Color(PxVec3(84.f / 255, 43.f / 255.f, 16.f / 255.f));
+
+				((PxRigidDynamic*)Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+
+				this->Material(cueMaterial, 0);
+				this->Material(cueTipMaterial, 1);
+			}
 		};
 
 		class PoolBalls
 		{
 			vector<Sphere*> balls;
-			Sphere* cueBall;
 
 			PxReal ballDensity = 1.69f;
 			PxReal ballDrag = 3.f;
@@ -272,6 +272,8 @@ namespace PhysBamt
 			PxMaterial* ballMaterial = nullptr;
 
 		public:
+			Sphere* cueBall;
+			
 			PoolBalls(const PxVec3& position, PxReal ballRadius = 0.068f)
 			{	
 				PxU8 ballsToPlace = 1;
@@ -279,7 +281,7 @@ namespace PhysBamt
 
 				ballMaterial = CreateMaterial(.1f, .2f, .82f);
 
-				cueBall = new Sphere(position + PxVec3(-3.f, 0.f, 0.f), PxIdentity, ballRadius, ballDensity);
+				cueBall = new Sphere(position + PxVec3(-ballRadius * 40, 0.f, 0.f), PxIdentity, ballRadius, ballDensity);
 				cueBall->Material(ballMaterial, -1);
 				cueBall->Color(ballWhite);
 				cueBall->SetupFiltering(PoolFilterGroup::CUEBALL, PoolFilterGroup::CUEBALL);
@@ -334,7 +336,6 @@ namespace PhysBamt
 				}
 				scene->Add(cueBall);
 			}
-			
 		};
 	}
 }

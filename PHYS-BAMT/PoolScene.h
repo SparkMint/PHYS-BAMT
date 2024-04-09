@@ -58,26 +58,42 @@ namespace PhysBamt
 	{
 		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count)
 		{
+			if(tableUnplayable)
+				return;
+			
 			for (size_t i = 0; i < count; i++)
 			{
-				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::BALLS && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::BALLS && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND && pairs[i].triggerShape->getSimulationFilterData().word0 != PoolFilterGroup::CUERESET)
 				{
 					score++;
+					cout << "Ball Potted! Score: " << score << endl;
 				}
-
-				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::CUEBALL && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+					
+				if (pairs[i].otherShape->getSimulationFilterData().word0 & PoolFilterGroup::CUEBALL && pairs[i].triggerShape->getSimulationFilterData().word0 & PoolFilterGroup::CUERESET && pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
 				{
-					pairs[i].otherActor->setGlobalPose(PxTransform(PxVec3(0.f, 5.f, 0.f), PxIdentity));
+					score--;
+					cout << "Cue ball out of bounds! Score: " << score << endl;
+					pairs[i].otherShape->getActor()->setGlobalPose(PxTransform(PxVec3(0.f, 5.f, 0.f), PxIdentity));
+					((PxRigidDynamic*)pairs[i].otherShape->getActor())->setLinearVelocity(PxVec3Zero);
 				}
 			}
 		}
 		virtual void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {}
-		virtual void onConstraintBreak(PxConstraintInfo* constraints, PxU32 count) {}
+		virtual void onConstraintBreak(PxConstraintInfo* constraints, PxU32 count)
+		{
+			cout << "Table is broken! GAME OVER!" << endl;
+			tableUnplayable = true;
+		}
 		virtual void onWake(PxActor** actors, PxU32 count) {}
 		virtual void onSleep(PxActor** actors, PxU32 count) {}
 		virtual void onAdvance(const PxRigidBody* const* bodyBuffer, const PxTransform* poseBuffer, const PxU32 count) {}
 
+
+		
 		public:
+			// Determines if the table is broken beyond repair. At this point the player cant play anymore.
+			bool tableUnplayable = false;
+		
 			int score;
 	};
 
@@ -92,18 +108,23 @@ namespace PhysBamt
 		PoolCueState cueState = READY;
 		
 		Plane* plane;
+		Plane* cueTriggerPlane;
 		PoolTable* table;
 		PoolBalls* balls;
 
-		Capsule* cue;
+		PoolCue* cue;
 		ConfigurableJoint* cueJoint;
 
-		Sphere* hugeCueBall;
-		Capsule* hugeCue;
+		PoolBalls* hugePoolBalls;
+		PoolCue* hugeCue;
 		LinearJoint* hugeCueJoint;
 		
-		PxMaterial* cueMaterial;
 		PoolSceneEventCallback* eventCallback;
+
+		// Determines how long until the catastrophic event occurs.
+		PxReal timeLimit = 45.f;
+
+		PxReal currentTimeLeft;
 		
 		void AutoCueBehaviour(PxReal fdt);
 		void MouseCueBehaviour(PxReal fdt);
@@ -121,5 +142,8 @@ namespace PhysBamt
 
 		// Fixed update function. Called a fixed number of times per second
 		void FixedUpdate(PxReal fdt) override;
+		
+		void HandleHUDLogic() const;
+		void HandleInput(PxReal dt);
 	};
 }

@@ -18,7 +18,7 @@ namespace PhysBamt
 				CUEINACTIVE = (1 << 1),
 				CUEBALL     = (1 << 2),
 				BALLS       = (1 << 3),
-				TABLE       = (1 << 4)
+				CUERESET    = (1 << 4)
 			};
 		};
 
@@ -368,6 +368,11 @@ namespace PhysBamt
 			void UpdateJointAnchor(PxJointActorIndex::Enum actorIndex, PxVec3 position, PxQuat rotation) const
 			{
 				joint->setLocalPose(actorIndex, PxTransform(position, rotation));
+			}
+
+			void SetBreakForce(PxReal linear, PxReal angular) const
+			{
+				joint->setBreakForce(linear, angular);
 			}
 		};
 

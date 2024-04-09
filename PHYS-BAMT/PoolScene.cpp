@@ -18,6 +18,8 @@ namespace PhysBamt
 	{
 		eventCallback = new PoolSceneEventCallback();
 		px_scene->setSimulationEventCallback(eventCallback);
+
+		currentTimeLeft = timeLimit;
 		
 		SetVisualisation();
 
@@ -31,20 +33,18 @@ namespace PhysBamt
 		plane->Color(PxVec3(0.f / 255.f, 200.f / 255.f, 0.f / 255.f));
 		Add(plane);
 
+		cueTriggerPlane = new Plane();
+		cueTriggerPlane->SetTrigger(true);
+		cueTriggerPlane->SetupFiltering(PoolFilterGroup::CUERESET, PoolFilterGroup::CUEBALL);
+		Add(cueTriggerPlane);
+
 		table = new PoolTable(PxVec3(0.f, 0.f, 0.f));
 		table->AddToScene(this);
 
 		balls = new PoolBalls(PxVec3(1.15f, 1.6f, 0.f));
 		balls->AddToScene(this);
-
-		cueMaterial = CreateMaterial(.6f, .6f, .81f);
-		cue = new Capsule(PxVec3(-2.f, 5.f, 0.f), PxIdentity, PxVec2(0.02f, 1.44f));
-		cue->Material(cueMaterial, 0);
-		cue->CreateShape(PxBoxGeometry(PxVec3(.05f, .02f, .02f)), 1.f);
-		cue->GetShape(1)->setLocalPose(PxTransform(PxVec3(-1.44f - .05f, 0.f, 0.f)));
-		cue->Color(PxVec3(84.f / 255, 43.f / 255.f, 16.f / 255.f));
-		// Enable Continuous Collision Detection for the cue.
-		((PxRigidDynamic*)cue->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+		
+		cue = new PoolCue(PxVec3(-2.f, 5.f, 0.f), PxIdentity, PxVec2(0.02f, 1.44f));
 		Add(cue);
 
 		const PxVec3 cueOffset = PxVec3(0.f, -.1f, 0.f);
@@ -59,44 +59,67 @@ namespace PhysBamt
 		cueJoint->SetSlerpDrive(25.f, 2.f, .5f);
 		cueJoint->SetLinearDrives(25.f, 2.5f, .25f);
 
-		hugeCueBall = new Sphere(PxVec3(-50.f, 10.f, 0.f), PxIdentity, .061f * 100);
-		Add(hugeCueBall);
-	}
+		hugePoolBalls = new PoolBalls(PxVec3(20.f, 10.f, 0.f), .061f * 50);
+		hugePoolBalls->AddToScene(this);
+		hugePoolBalls->cueBall->SetupFiltering(0,0);
 
-	PxReal maxCameraSpeed = 1.f;
-	PxReal cameraLookSensitivity = 5.f;
-	PxReal acceleration = 2.f;
-	PxReal currentCameraSpeed = 0.f;
+		hugeCue = new PoolCue(PxVec3(-225.f, 2.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up), PxVec2(0.02f * 50, 1.44f * 50));
+		Add(hugeCue);
+
+		hugeCueJoint = new LinearJoint(nullptr, PxTransform(PxVec3(-225.f, 2.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3(0.f, 1.f, 0.f))), hugeCue, PxTransform(PxVec3(1.44f * 50 / 2.f, 0.f, 0.f)));
+		hugeCueJoint->SetLimits(0.f, 50.f, PxSpring(999999.f, 100.f));
+	}
 	
 	void PoolScene::Update(PxReal dt)
+	{
+		HandleHUDLogic();
+		HandleInput(dt);
+	}
+	
+	void PoolScene::FixedUpdate(PxReal fdt)
+	{ 
+		((PxRigidDynamic*)cue->Get())->wakeUp();
+
+		if(Engine::camera != nullptr)
+		{
+			//AutoCueBehaviour(fdt);
+			MouseCueBehaviour(fdt);
+		}
+
+		if(currentTimeLeft > 0.f)
+			currentTimeLeft -= fdt;
+		else
+		((PxRigidBody*)hugeCue->Get())->addForce(PxVec3Right * 1000.f, PxForceMode::eIMPULSE);
+	
+	}
+
+	void PoolScene::HandleHUDLogic() const
 	{
 		Engine::hud.Clear();
 
 		// EMPTY SCREEN
 		Engine::hud.AddLine(Engine::EMPTY, "");
 
-		// HELP SCREEN
-					// EMPTY SCREEN
-		Engine::hud.AddLine(Engine::EMPTY, "");
+		string gameState = currentTimeLeft > 0.f ? std::to_string(currentTimeLeft) : "GAME OVER";
 
-		// HELP SCREEN
+		// GAME SCREEN
 		Engine::hud.AddLine(Engine::HELP, "\n"
-			"SIMULATION \n"
-			"F9 - Select next actor \n"
-			"F10 - Pause \n"
-			"F12 - Reset Everything\n"
-			"\n"
-			"DISPLAY \n"
-			"F5 - Toggle Debug HUD \n"
-			"F6 - Render Shadows \n"
-			"F7 - Debug/Normal/Both Render Modes \n"
-			"\n"
-			"CAMERA \n"
+			"CONTROLS \n"
 			"W,S,A,D,E,Q - Forward, Backward, Left, Right, Up, Down \n"
 			"RMB + Mouse - Look Around \n"
+			"LMB + Mouse Up/Down - Activate Cue/Move Cue Back and Forth\n"
+			"\n"
+			"DEBUG CONTROLS \n"
+			"F5 - Toggle HUD \n"
+			"F6 - Render Shadows \n"
+			"F7 - Debug/Normal/Both Render Modes \n"
 			"F8 - Reset View \n"
-			"SCORE \n"
-			+ std::to_string(eventCallback->score));
+			"F10 - Pause \n"
+			"F12 - Reset\n"
+			"\n"
+			"GAME \n"
+			"Time Remaining: " + gameState + "\n"
+			"Score: " + std::to_string(eventCallback->score));
 
 		// PAUSE SCREEN
 		Engine::hud.AddLine(Engine::PAUSE, "\n"
@@ -105,8 +128,15 @@ namespace PhysBamt
 		// FONT SETTINGS
 		Engine::hud.FontSize(0.018f);
 		Engine::hud.Color(PxVec3(0.f, 0.f, 0.f));
+	}
 
+	PxReal maxCameraSpeed = 1.f;
+	PxReal cameraLookSensitivity = 5.f;
+	PxReal acceleration = 2.f;
+	PxReal currentCameraSpeed = 0.f;
 
+	void PoolScene::HandleInput(PxReal dt)
+	{
 		if(Engine::GetKeyDown('w') || Engine::GetKeyDown('a') || Engine::GetKeyDown('s') || Engine::GetKeyDown('d') || Engine::GetKeyDown('q') || Engine::GetKeyDown('e'))
 			currentCameraSpeed += dt * acceleration;
 		else
@@ -127,18 +157,6 @@ namespace PhysBamt
 		
 		if(Engine::GetMouseDown(GLUT_RIGHT_BUTTON))
 			Engine::camera->Look(Engine::GetMouseDeltaX(), Engine::GetMouseDeltaY(), cameraLookSensitivity, dt);
-	}
-
-	
-	void PoolScene::FixedUpdate(PxReal fdt)
-	{ 
-		((PxRigidDynamic*)cue->Get())->wakeUp();
-
-		if(Engine::camera != nullptr)
-		{
-			//AutoCueBehaviour(fdt);
-			MouseCueBehaviour(fdt);
-		}
 	}
 
 	// The current offset the cue is at.
@@ -224,5 +242,3 @@ namespace PhysBamt
 		cueJoint->UpdateTargetPose(posePosition, poseRotation);
 	}
 }
-
-

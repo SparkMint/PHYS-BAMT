@@ -37,7 +37,7 @@ namespace PhysBamt
 		int mouseDeltaX = 0;
 		int mouseDeltaY = 0;
 		
-		PxReal gForceStrength = .1f;
+		PxReal gForceStrength = 100.0f;
 		
 		void InitializeEngine(const char* window_name, int width, int height)
 		{
