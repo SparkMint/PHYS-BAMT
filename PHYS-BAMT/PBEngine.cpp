@@ -114,8 +114,6 @@ namespace PhysBamt
 		
 		void EngineLoop()
 		{
-			HandleEngineInputs();
-
 			// Calculate DeltaTime using chrono.
 			currentTimePoint = std::chrono::steady_clock::now();
 			deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTimePoint - lastTimePoint).count() / 1000000.0f;
@@ -148,38 +146,6 @@ namespace PhysBamt
 			
 			hud.Render();
 			FinishRendering();
-		}
-
-		//handle force control keys
-		void ForceInput(int key)
-		{
-			if (!scene->GetSelectedActor())
-				return;
-
-			switch (toupper(key))
-			{
-				// Force controls on the selected actor
-			case 'I': //forward
-				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1) * gForceStrength);
-				break;
-			case 'K': //backward
-				scene->GetSelectedActor()->addForce(PxVec3(0, 0, 1) * gForceStrength);
-				break;
-			case 'J': //left
-				scene->GetSelectedActor()->addForce(PxVec3(-1, 0, 0) * gForceStrength);
-				break;
-			case 'L': //right
-				scene->GetSelectedActor()->addForce(PxVec3(1, 0, 0) * gForceStrength);
-				break;
-			case 'U': //up
-				scene->GetSelectedActor()->addForce(PxVec3(0, 1, 0) * gForceStrength);
-				break;
-			case 'M': //down
-				scene->GetSelectedActor()->addForce(PxVec3(0, -1, 0) * gForceStrength);
-				break;
-			default:
-				break;
-			}
 		}
 
 		///handle special keys
@@ -244,17 +210,6 @@ namespace PhysBamt
 			keyStates[key] = false;
 		}
 		
-		void HandleEngineInputs()
-		{
-			for (int i = 0; i < 256; i++)
-			{
-				// If the key is down.
-				if (keyStates[i])
-				{
-					ForceInput(i);
-				}
-			}
-		}
 
 		bool GetKeyPressed(unsigned char key)
 		{

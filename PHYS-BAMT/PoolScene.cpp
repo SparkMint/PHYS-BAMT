@@ -67,7 +67,7 @@ namespace PhysBamt
 		hugeCue = new PoolCue(PxVec3(-225.f, 2.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3Up), PxVec2(0.02f * 50, 1.44f * 50));
 		Add(hugeCue);
 
-		hugeCueJoint = new LinearJoint(nullptr, PxTransform(PxVec3(-225.f, 2.5f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3(0.f, 1.f, 0.f))), hugeCue, PxTransform(PxVec3(1.44f * 50 / 2.f, 0.f, 0.f)));
+		hugeCueJoint = new LinearJoint(nullptr, PxTransform(PxVec3(-225.f, 2.75f, 0.f), PxQuat(Deg2Rad(180.f), PxVec3(0.f, 1.f, 0.f))), hugeCue, PxTransform(PxVec3(1.44f * 50 / 2.f, 0.f, 0.f)));
 		hugeCueJoint->SetLimits(0.f, 50.f, PxSpring(999999.f, 100.f));
 
 		spinningFlag = new SpinningFlag(PxVec3(0.f, 0.f, -10.f), PxQuat(Deg2Rad(90.f), PxVec3Forward));

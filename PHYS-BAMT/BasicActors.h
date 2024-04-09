@@ -315,16 +315,6 @@ namespace PhysBamt
 				//wake up the attached actors
 				PxRigidDynamic* actor_0, * actor_1;
 				((PxRevoluteJoint*)joint)->getActors((PxRigidActor*&)actor_0, (PxRigidActor*&)actor_1);
-				if (actor_0)
-				{
-					if (actor_0->isSleeping())
-						actor_0->wakeUp();
-				}
-				if (actor_1)
-				{
-					if (actor_1->isSleeping())
-						actor_1->wakeUp();
-				}
 				((PxRevoluteJoint*)joint)->setDriveVelocity(value);
 				((PxRevoluteJoint*)joint)->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
 			}

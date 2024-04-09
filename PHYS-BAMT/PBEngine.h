@@ -29,7 +29,6 @@ namespace PhysBamt
 		void StartEngine();
 		void EngineLoop();
 		
-		void HandleEngineInputs();
 		void HandleDebugInputs(int key, int x, int y);
 		void OnKeyReleased(unsigned char key, int x, int y);
 		void OnKeyPressed(unsigned char key, int x, int y);
