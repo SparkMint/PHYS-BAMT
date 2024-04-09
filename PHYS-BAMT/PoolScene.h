@@ -87,8 +87,6 @@ namespace PhysBamt
 		virtual void onWake(PxActor** actors, PxU32 count) {}
 		virtual void onSleep(PxActor** actors, PxU32 count) {}
 		virtual void onAdvance(const PxRigidBody* const* bodyBuffer, const PxTransform* poseBuffer, const PxU32 count) {}
-
-
 		
 		public:
 			// Determines if the table is broken beyond repair. At this point the player cant play anymore.
@@ -118,6 +116,7 @@ namespace PhysBamt
 		PoolBalls* hugePoolBalls;
 		PoolCue* hugeCue;
 		LinearJoint* hugeCueJoint;
+		SpinningFlag* spinningFlag;
 		
 		PoolSceneEventCallback* eventCallback;
 

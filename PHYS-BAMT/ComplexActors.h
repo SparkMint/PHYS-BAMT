@@ -337,5 +337,43 @@ namespace PhysBamt
 				scene->Add(cueBall);
 			}
 		};
+
+		class SpinningFlag
+		{
+			Capsule* flagBase;
+			Box* spinnyBit;
+			Cloth* flagCloth;
+			Cloth* flagCloth2;
+			HingeJoint* spinnyBitJoint;
+
+			PxVec2 flagBaseDimensions = PxVec2(.25f, 4.f);
+			PxVec3 spinnyBitDimensions = PxVec3(.2f, 3.f, .2f);
+
+		public:
+			SpinningFlag(PxVec3& position, PxQuat rotation)
+			{
+				flagBase = new Capsule(position + PxVec3(0.f, flagBaseDimensions.y, 0.f), rotation, flagBaseDimensions, 1.f);
+				flagBase->SetKinematic(true);
+
+				spinnyBit = new Box(position + PxVec3(0.f, flagBaseDimensions.y * 2, spinnyBitDimensions.z * 2), rotation, spinnyBitDimensions);
+			
+				spinnyBitJoint = new HingeJoint(flagBase, PxTransform(PxVec3(flagBaseDimensions.y, 0.f, 0.f), PxQuat(Deg2Rad(90.f), PxVec3(1.f,0.f,0.f))), spinnyBit, PxTransform(PxVec3(0.f, 0.f, 0.f), PxIdentity));
+				spinnyBitJoint->DriveVelocity(1.f);
+
+				flagCloth = new Cloth(PxTransform(position + PxVec3(-spinnyBitDimensions.y * .75f, flagBaseDimensions.y * 2.5, 2.5f), PxQuat(Deg2Rad(90.f), PxVec3(0.f,1.f,0.f))), PxVec2(5.f,5.f), 10, 10);
+				flagCloth2 = new Cloth(PxTransform(position + PxVec3(spinnyBitDimensions.y * .75f, flagBaseDimensions.y * 2.5, 2.5f), PxQuat(Deg2Rad(90.f), PxVec3(0.f,1.f,0.f))), PxVec2(5.f,5.f), 10, 10);
+				flagCloth->SetSolverFrequency(240.f);
+				flagCloth2->SetSolverFrequency(240.f);
+			}
+
+
+			void AddToScene(Scene* scene)
+			{
+				scene->Add(flagBase);
+				scene->Add(spinnyBit);
+				scene->Add(flagCloth);
+				scene->Add(flagCloth2);
+			}
+		};
 	}
 }
