@@ -8,6 +8,7 @@ obj/
 Debug/
 Release/
 .vs/
+.idea/
 html/
 latex/
 data/
